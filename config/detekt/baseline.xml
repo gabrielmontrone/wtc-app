@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>NewLineAtEndOfFile:CampanhasActivity.kt$br.com.fiap.wtcapp.CampanhasActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:ContatosActivity.kt$br.com.fiap.wtcapp.ContatosActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:ConversasActivity.kt$br.com.fiap.wtcapp.ConversasActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:CriarCampanhaActivity.kt$br.com.fiap.wtcapp.CriarCampanhaActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:HomeActivity.kt$br.com.fiap.wtcapp.HomeActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:MensagensActivity.kt$br.com.fiap.wtcapp.MensagensActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:SegmentosActivity.kt$br.com.fiap.wtcapp.SegmentosActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:WelcomeActivity.kt$br.com.fiap.wtcapp.WelcomeActivity.kt</ID>
+    <ID>WildcardImport:CampanhasActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:CampanhasActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:CampanhasActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ContatosActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ContatosActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:ContatosActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:ConversasActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:ConversasActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:ConversasActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:CriarCampanhaActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:CriarCampanhaActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:CriarCampanhaActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:HomeActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:HomeActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MensagensActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:MensagensActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MensagensActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:SegmentosActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:SegmentosActivity.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:SegmentosActivity.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:WelcomeActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:WelcomeActivity.kt$import androidx.compose.material3.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

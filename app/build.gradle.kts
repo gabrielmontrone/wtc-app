@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.google.services)
 }
 
@@ -27,7 +29,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -41,6 +43,14 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    testOptions {
+        unitTests.all {
+            // Force the forked test JVM to UTF-8 so accented identifiers/strings in
+            // test names resolve consistently across machines.
+            it.jvmArgs("-Dfile.encoding=UTF-8", "-Dsun.jnu.encoding=UTF-8")
+            it.systemProperty("file.encoding", "UTF-8")
+        }
     }
 }
 
@@ -70,6 +80,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -82,3 +93,36 @@ dependencies {
     implementation(libs.firebase.messaging)
 }
 
+// Static analysis ---------------------------------------------------------------
+
+// Legacy Activity screens still pending migration to Clean Architecture + MVVM.
+// They are excluded from ktlint for now; each is removed from this list as it is
+// migrated, so lint coverage grows with the refactor instead of blocking it.
+val legacyScreensPendingMigration =
+    listOf(
+        "WelcomeActivity",
+        "HomeActivity",
+        "ContatosActivity",
+        "ConversasActivity",
+        "MensagensActivity",
+        "CampanhasActivity",
+        "CriarCampanhaActivity",
+        "SegmentosActivity",
+    )
+
+ktlint {
+    android.set(true)
+    ignoreFailures.set(false)
+    filter {
+        // Don't lint generated sources (BuildConfig, Hilt, KSP, etc.).
+        exclude { entry -> entry.file.path.contains("generated") }
+        exclude { entry -> legacyScreensPendingMigration.any { entry.file.name == "$it.kt" } }
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+}

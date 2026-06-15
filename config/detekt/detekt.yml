@@ -1,0 +1,25 @@
+# detekt configuration — layered on top of the default rules (buildUponDefaultConfig = true).
+# Only the deltas needed for a Jetpack Compose codebase are listed here.
+
+complexity:
+  LongMethod:
+    # Compose UI builders are naturally long; give them headroom.
+    threshold: 120
+  TooManyFunctions:
+    ignoreAnnotatedFunctions: ['Composable']
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    # dp/sp/color literals in Compose UI would be noise.
+    ignoreAnnotated: ['Composable']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  MaxLineLength:
+    maxLineLength: 140
