@@ -1,14 +1,65 @@
 package br.com.fiap.wtcapp.data.remote
 
+import br.com.fiap.wtcapp.data.remote.dto.CampaignRequestDto
+import br.com.fiap.wtcapp.data.remote.dto.CampaignResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.ChatMessageRequestDto
+import br.com.fiap.wtcapp.data.remote.dto.ConversationResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.CustomerResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.MessageResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.PageDto
+import br.com.fiap.wtcapp.data.remote.dto.SegmentResponseDto
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 
-/** Typed Retrofit description of the WTC REST API. */
+/**
+ * Typed Retrofit description of the WTC REST API. Each endpoint carries its full path
+ * because the backend mixes `/customers` and `/api/v1/...` prefixes. Authenticated
+ * endpoints rely on [AuthInterceptor] to attach the bearer token.
+ */
 interface WtcApi {
     @POST("api/v1/auth/login")
     suspend fun login(
         @Body request: LoginRequestDto,
     ): LoginResponseDto
+
+    @GET("customers")
+    suspend fun listCustomers(
+        @Query("vip") vip: Boolean?,
+        @Query("fidelidade") loyalty: Boolean?,
+        @Query("ativo") active: Boolean?,
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+    ): PageDto<CustomerResponseDto>
+
+    @GET("api/v1/segments")
+    suspend fun listSegments(): List<SegmentResponseDto>
+
+    @GET("api/v1/campaigns")
+    suspend fun listCampaigns(): List<CampaignResponseDto>
+
+    @POST("api/v1/campaigns")
+    suspend fun createCampaign(
+        @Body request: CampaignRequestDto,
+    ): CampaignResponseDto
+
+    @GET("api/v1/conversations/customer/{customerId}")
+    suspend fun listConversations(
+        @Path("customerId") customerId: String,
+    ): List<ConversationResponseDto>
+
+    @GET("api/v1/messages/conversation/{conversationId}")
+    suspend fun listMessages(
+        @Path("conversationId") conversationId: String,
+    ): List<MessageResponseDto>
+
+    @POST("api/v1/conversations/{conversationId}/messages")
+    suspend fun sendReply(
+        @Path("conversationId") conversationId: String,
+        @Body request: ChatMessageRequestDto,
+    ): MessageResponseDto
 }

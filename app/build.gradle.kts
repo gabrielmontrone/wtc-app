@@ -95,28 +95,12 @@ dependencies {
 
 // Static analysis ---------------------------------------------------------------
 
-// Legacy Activity screens still pending migration to Clean Architecture + MVVM.
-// They are excluded from ktlint for now; each is removed from this list as it is
-// migrated, so lint coverage grows with the refactor instead of blocking it.
-val legacyScreensPendingMigration =
-    listOf(
-        "WelcomeActivity",
-        "HomeActivity",
-        "ContatosActivity",
-        "ConversasActivity",
-        "MensagensActivity",
-        "CampanhasActivity",
-        "CriarCampanhaActivity",
-        "SegmentosActivity",
-    )
-
 ktlint {
     android.set(true)
     ignoreFailures.set(false)
     filter {
         // Don't lint generated sources (BuildConfig, Hilt, KSP, etc.).
         exclude { entry -> entry.file.path.contains("generated") }
-        exclude { entry -> legacyScreensPendingMigration.any { entry.file.name == "$it.kt" } }
     }
 }
 

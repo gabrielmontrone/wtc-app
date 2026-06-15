@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp.di
 
 import br.com.fiap.wtcapp.BuildConfig
 import br.com.fiap.wtcapp.api.ApiConfig
+import br.com.fiap.wtcapp.data.remote.AuthInterceptor
 import br.com.fiap.wtcapp.data.remote.WtcApi
 import dagger.Module
 import dagger.Provides
@@ -31,7 +32,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val logging =
             HttpLoggingInterceptor().apply {
                 level =
@@ -42,6 +43,7 @@ object NetworkModule {
                     }
             }
         return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
             .addInterceptor(logging)
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
