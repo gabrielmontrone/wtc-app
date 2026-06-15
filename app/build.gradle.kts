@@ -2,8 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
-
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -11,7 +10,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "br.com.fiap.wtc"
+        applicationId = "br.com.fiap.wtcapp"
         minSdk = 27
         targetSdk = 36
         versionCode = 1
@@ -58,8 +57,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    dependencies {
-        implementation("com.google.firebase:firebase-messaging:23.4.1")
-    }
+
+    // Firebase (versions managed by the BOM)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }
 
