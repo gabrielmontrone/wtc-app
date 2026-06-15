@@ -24,6 +24,7 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +44,7 @@ import br.com.fiap.wtcapp.ui.contatos.ContatoFiltro
 import br.com.fiap.wtcapp.ui.contatos.ContatosUiState
 import br.com.fiap.wtcapp.ui.contatos.ContatosViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -51,7 +52,7 @@ class ContatosActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WTCTheme {
+            WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     ContatosRoute(
                         onContactClick = { customerId ->
@@ -96,14 +97,14 @@ fun ContatosScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
     ) {
         Text(
             text = "Contatos",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
@@ -134,9 +135,11 @@ fun ContatosScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         when {
-            state.isLoading -> CenteredContent { CircularProgressIndicator(color = Color(0xFF1976D2)) }
+            state.isLoading -> CenteredContent { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
             state.visibleCustomers.isEmpty() ->
-                CenteredContent { Text("Nenhum contato encontrado", color = Color(0xFF555555)) }
+                CenteredContent {
+                    Text("Nenhum contato encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             else ->
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -173,8 +176,18 @@ fun ContatoFilterChip(
         shape = RoundedCornerShape(50),
         colors =
             AssistChipDefaults.assistChipColors(
-                containerColor = if (selected) Color(0xFF1976D2) else Color(0xFFE3F2FD),
-                labelColor = if (selected) Color.White else Color(0xFF1976D2),
+                containerColor =
+                    if (selected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                labelColor =
+                    if (selected) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
             ),
     )
 }
@@ -190,21 +203,34 @@ fun ContactCard(
                 .fillMaxWidth()
                 .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(customer.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-            Text("Documento: ${customer.document}", fontSize = 14.sp, color = Color(0xFF555555))
+            Text(
+                customer.name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                "Documento: ${customer.document}",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(modifier = Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = if (customer.active) "Ativo" else "Inativo",
                     fontSize = 12.sp,
-                    color = Color(0xFF999999),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (customer.vip) Text("VIP", fontSize = 12.sp, color = Color(0xFF999999))
-                if (customer.loyalty) Text("Fidelidade", fontSize = 12.sp, color = Color(0xFF999999))
+                if (customer.vip) {
+                    Text("VIP", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (customer.loyalty) {
+                    Text("Fidelidade", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }
@@ -213,19 +239,21 @@ fun ContactCard(
 @Preview(showBackground = true)
 @Composable
 private fun ContatosScreenPreview() {
-    WTCTheme {
-        ContatosScreen(
-            state =
-                ContatosUiState(
-                    customers =
-                        listOf(
-                            Customer("1", "Ana Souza", "12345678901", vip = true, loyalty = false, active = true),
-                            Customer("2", "Carlos Lima", "98765432100", vip = false, loyalty = true, active = false),
-                        ),
-                ),
-            onSearchChange = {},
-            onFilterChange = {},
-            onContactClick = {},
-        )
+    WTCTheme(darkTheme = true) {
+        Surface {
+            ContatosScreen(
+                state =
+                    ContatosUiState(
+                        customers =
+                            listOf(
+                                Customer("1", "Ana Souza", "12345678901", vip = true, loyalty = false, active = true),
+                                Customer("2", "Carlos Lima", "98765432100", vip = false, loyalty = true, active = false),
+                            ),
+                    ),
+                onSearchChange = {},
+                onFilterChange = {},
+                onContactClick = {},
+            )
+        }
     }
 }

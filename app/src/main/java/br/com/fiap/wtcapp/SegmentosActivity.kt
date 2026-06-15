@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,6 +36,7 @@ import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
 import br.com.fiap.wtcapp.ui.segmentos.SegmentosUiState
 import br.com.fiap.wtcapp.ui.segmentos.SegmentosViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -43,7 +44,7 @@ class SegmentosActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WTCTheme {
+            WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     SegmentosRoute()
                 }
@@ -73,14 +74,14 @@ fun SegmentosScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
     ) {
         Text(
             text = "Segmentos",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
@@ -96,9 +97,11 @@ fun SegmentosScreen(
 
         when {
             state.isLoading ->
-                Centered { CircularProgressIndicator(color = Color(0xFF1976D2)) }
+                Centered { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
             state.visibleSegments.isEmpty() ->
-                Centered { Text("Nenhum segmento encontrado", color = Color(0xFF555555)) }
+                Centered {
+                    Text("Nenhum segmento encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             else ->
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -128,11 +131,16 @@ fun SegmentoCard(segment: Segment) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(segment.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+            Text(
+                segment.name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             val criteria =
                 buildList {
                     if (segment.vip) add("VIP")
@@ -140,7 +148,7 @@ fun SegmentoCard(segment: Segment) {
                     segment.minLoyalty?.let { add("Fidelidade ≥ $it") }
                     add(if (segment.active) "Ativo" else "Inativo")
                 }.joinToString(" · ")
-            Text(criteria, fontSize = 14.sp, color = Color(0xFF555555))
+            Text(criteria, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -148,17 +156,19 @@ fun SegmentoCard(segment: Segment) {
 @Preview(showBackground = true)
 @Composable
 private fun SegmentosScreenPreview() {
-    WTCTheme {
-        SegmentosScreen(
-            state =
-                SegmentosUiState(
-                    segments =
-                        listOf(
-                            Segment("1", "VIP", vip = true, active = true, minScore = 80, minLoyalty = null),
-                            Segment("2", "Recentes", vip = false, active = true, minScore = null, minLoyalty = 1),
-                        ),
-                ),
-            onSearchChange = {},
-        )
+    WTCTheme(darkTheme = true) {
+        Surface {
+            SegmentosScreen(
+                state =
+                    SegmentosUiState(
+                        segments =
+                            listOf(
+                                Segment("1", "VIP", vip = true, active = true, minScore = 80, minLoyalty = null),
+                                Segment("2", "Recentes", vip = false, active = true, minScore = null, minLoyalty = 1),
+                            ),
+                    ),
+                onSearchChange = {},
+            )
+        }
     }
 }

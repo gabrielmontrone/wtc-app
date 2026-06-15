@@ -37,6 +37,12 @@
             android:theme="@style/Theme.WTC" />
 
         <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:label="Criar conta"
+            android:theme="@style/Theme.WTC" />
+
+        <activity
             android:name=".HomeActivity"
             android:exported="false"
             android:label="Home"

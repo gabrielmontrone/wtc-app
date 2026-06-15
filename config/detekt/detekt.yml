@@ -7,6 +7,9 @@ complexity:
     threshold: 120
   TooManyFunctions:
     ignoreAnnotatedFunctions: ['Composable']
+  LongParameterList:
+    # Hoisted Compose screens take state + one lambda per event; that is idiomatic.
+    ignoreAnnotated: ['Composable']
 
 naming:
   FunctionNaming:

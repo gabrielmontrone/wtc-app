@@ -20,26 +20,30 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class WelcomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WTCTheme {
+            WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     WelcomeScreen()
                 }
@@ -54,7 +58,7 @@ fun WelcomeScreen() {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.background),
     ) {
         Column(
             modifier =
@@ -66,7 +70,6 @@ fun WelcomeScreen() {
         ) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 🔷 Logo
             Box(
                 modifier =
                     Modifier
@@ -81,66 +84,26 @@ fun WelcomeScreen() {
                 )
             }
 
-            // 🔷 Descrição
             Text(
                 text = "Plataforma de mensagens e CRM para comunicação inteligente com clientes",
                 fontSize = 16.sp,
-                color = Color(0xFF555555),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(vertical = 16.dp),
             )
 
-            // 🔷 Cards informativos
             Column(modifier = Modifier.fillMaxWidth()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                ) {
-                    Text(
-                        text = "💬 Mensagens Ricas – Interações personalizadas",
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
-
+                WelcomeFeatureCard("💬 Mensagens Ricas – Interações personalizadas")
                 Spacer(modifier = Modifier.height(12.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                ) {
-                    Text(
-                        text = "📇 CRM Integrado – Gestão completa de clientes",
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
-
+                WelcomeFeatureCard("📇 CRM Integrado – Gestão completa de clientes")
                 Spacer(modifier = Modifier.height(12.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                ) {
-                    Text(
-                        text = "🚀 Campanhas Express – Envios rápidos e segmentados",
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
+                WelcomeFeatureCard("🚀 Campanhas Express – Envios rápidos e segmentados")
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             val context = LocalContext.current
 
-            // 🔷 Botão de login
             Button(
                 onClick = {
                     context.startActivity(Intent(context, LoginActivity::class.java))
@@ -148,25 +111,54 @@ fun WelcomeScreen() {
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(52.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
             ) {
-                Text("Começar Agora", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Começar Agora", fontWeight = FontWeight.Bold)
             }
 
-            // 🔷 Link alternativo
-            TextButton(onClick = { /* Ação futura */ }) {
-                Text("Acesse como cliente ou operador", color = Color(0xFF1976D2))
+            TextButton(onClick = { }) {
+                Text("Acesse como cliente ou operador", color = MaterialTheme.colorScheme.onBackground)
             }
 
-            // 🔷 Rodapé
             Text(
                 text = "© 2025 WTC. Todos os direitos reservados.",
                 fontSize = 12.sp,
-                color = Color(0xFF999999),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun WelcomeFeatureCard(text: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WelcomeScreenPreview() {
+    WTCTheme(darkTheme = true) {
+        Surface {
+            WelcomeScreen()
         }
     }
 }

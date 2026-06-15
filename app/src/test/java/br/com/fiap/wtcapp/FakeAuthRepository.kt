@@ -6,6 +6,7 @@ import br.com.fiap.wtcapp.domain.repository.AuthRepository
 /** In-memory test double for [AuthRepository] — lets us drive success/failure paths. */
 class FakeAuthRepository(
     private var result: Result<Session> = Result.success(Session("token", "OPERATOR")),
+    private var registerResult: Result<Unit> = Result.success(Unit),
 ) : AuthRepository {
     var loginCallCount = 0
         private set
@@ -13,11 +14,21 @@ class FakeAuthRepository(
         private set
     var lastPassword: String? = null
         private set
+    var registerCallCount = 0
+        private set
+    var lastRegisterEmail: String? = null
+        private set
+    var lastRegisterRole: String? = null
+        private set
 
     private var storedToken: String? = null
 
     fun setResult(result: Result<Session>) {
         this.result = result
+    }
+
+    fun setRegisterResult(result: Result<Unit>) {
+        this.registerResult = result
     }
 
     override suspend fun login(
@@ -28,6 +39,17 @@ class FakeAuthRepository(
         lastEmail = email
         lastPassword = password
         return result.onSuccess { storedToken = it.token }
+    }
+
+    override suspend fun register(
+        email: String,
+        password: String,
+        role: String,
+    ): Result<Unit> {
+        registerCallCount++
+        lastRegisterEmail = email
+        lastRegisterRole = role
+        return registerResult
     }
 
     override fun currentToken(): String? = storedToken

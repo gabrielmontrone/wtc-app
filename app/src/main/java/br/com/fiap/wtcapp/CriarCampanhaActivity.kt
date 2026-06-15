@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
@@ -25,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,6 +37,7 @@ import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
 import br.com.fiap.wtcapp.ui.criarcampanha.CriarCampanhaUiState
 import br.com.fiap.wtcapp.ui.criarcampanha.CriarCampanhaViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -44,7 +45,7 @@ class CriarCampanhaActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WTCTheme {
+            WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     CriarCampanhaRoute(
                         onCreated = {
@@ -91,14 +92,14 @@ fun CriarCampanhaScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
     ) {
         Text(
             text = "Nova Campanha",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
@@ -125,7 +126,7 @@ fun CriarCampanhaScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text("Segmento", fontWeight = FontWeight.SemiBold, color = Color(0xFF555555))
+        Text("Segmento", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(8.dp))
 
         SegmentPicker(state = state, onSegmentSelect = onSegmentSelect)
@@ -138,13 +139,16 @@ fun CriarCampanhaScreen(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(52.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
         ) {
             Text(
                 text = if (state.isSubmitting) "Enviando..." else "Enviar Campanha",
-                color = Color.White,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -158,9 +162,17 @@ private fun SegmentPicker(
 ) {
     when {
         state.isLoadingSegments ->
-            Text("Carregando segmentos...", fontSize = 14.sp, color = Color(0xFF555555))
+            Text(
+                "Carregando segmentos...",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         state.segments.isEmpty() ->
-            Text("Nenhum segmento encontrado", fontSize = 14.sp, color = Color(0xFF555555))
+            Text(
+                "Nenhum segmento encontrado",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         else ->
             state.segments.forEach { segment ->
                 Row(
@@ -175,7 +187,7 @@ private fun SegmentPicker(
                         selected = state.selectedSegmentId == segment.id,
                         onClick = { onSegmentSelect(segment.id) },
                     )
-                    Text(text = segment.name, fontSize = 14.sp, color = Color(0xFF333333))
+                    Text(text = segment.name, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
     }
@@ -184,22 +196,24 @@ private fun SegmentPicker(
 @Preview(showBackground = true)
 @Composable
 private fun CriarCampanhaScreenPreview() {
-    WTCTheme {
-        CriarCampanhaScreen(
-            state =
-                CriarCampanhaUiState(
-                    title = "Black Friday",
-                    isLoadingSegments = false,
-                    segments =
-                        listOf(
-                            Segment("1", "VIP", vip = true, active = true, minScore = null, minLoyalty = null),
-                        ),
-                    selectedSegmentId = "1",
-                ),
-            onTitleChange = {},
-            onMessageChange = {},
-            onSegmentSelect = {},
-            onSubmit = {},
-        )
+    WTCTheme(darkTheme = true) {
+        Surface {
+            CriarCampanhaScreen(
+                state =
+                    CriarCampanhaUiState(
+                        title = "Black Friday",
+                        isLoadingSegments = false,
+                        segments =
+                            listOf(
+                                Segment("1", "VIP", vip = true, active = true, minScore = null, minLoyalty = null),
+                            ),
+                        selectedSegmentId = "1",
+                    ),
+                onTitleChange = {},
+                onMessageChange = {},
+                onSegmentSelect = {},
+                onSubmit = {},
+            )
+        }
     }
 }

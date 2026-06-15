@@ -17,13 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,6 +35,7 @@ import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
 import br.com.fiap.wtcapp.ui.conversas.ConversasUiState
 import br.com.fiap.wtcapp.ui.conversas.ConversasViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,7 +43,7 @@ class ConversasActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WTCTheme {
+            WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     ConversasRoute(
                         onConversationClick = { conversationId ->
@@ -83,14 +84,14 @@ fun ConversasScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(24.dp),
     ) {
         Text(
             text = "Conversas",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1976D2),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
@@ -100,13 +101,18 @@ fun ConversasScreen(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
-                ) { CircularProgressIndicator(color = Color(0xFF1976D2)) }
+                ) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
             state.conversations.isEmpty() ->
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
-                ) { Text("Nenhuma conversa para este cliente", color = Color(0xFF555555)) }
+                ) {
+                    Text(
+                        "Nenhuma conversa para este cliente",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             else ->
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -131,14 +137,23 @@ fun ChatCard(
                 .fillMaxWidth()
                 .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Conversa ${conversation.id}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-            Text("Status: ${conversation.status}", fontSize = 12.sp, color = Color(0xFF999999))
+            Text(
+                "Conversa ${conversation.id}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                "Status: ${conversation.status}",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             conversation.operatorId?.let {
-                Text("Operador: $it", fontSize = 12.sp, color = Color(0xFF555555))
+                Text("Operador: $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -147,17 +162,19 @@ fun ChatCard(
 @Preview(showBackground = true)
 @Composable
 private fun ConversasScreenPreview() {
-    WTCTheme {
-        ConversasScreen(
-            state =
-                ConversasUiState(
-                    conversations =
-                        listOf(
-                            Conversation("c1", "cust1", "op1", "OPEN"),
-                            Conversation("c2", "cust1", null, "CLOSED"),
-                        ),
-                ),
-            onConversationClick = {},
-        )
+    WTCTheme(darkTheme = true) {
+        Surface {
+            ConversasScreen(
+                state =
+                    ConversasUiState(
+                        conversations =
+                            listOf(
+                                Conversation("c1", "cust1", "op1", "OPEN"),
+                                Conversation("c2", "cust1", null, "CLOSED"),
+                            ),
+                    ),
+                onConversationClick = {},
+            )
+        }
     }
 }

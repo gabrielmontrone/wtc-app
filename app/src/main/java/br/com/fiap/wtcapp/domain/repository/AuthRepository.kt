@@ -12,6 +12,12 @@ interface AuthRepository {
         password: String,
     ): Result<Session>
 
+    suspend fun register(
+        email: String,
+        password: String,
+        role: String,
+    ): Result<Unit>
+
     fun currentToken(): String?
 
     fun logout()

@@ -1,6 +1,5 @@
 package br.com.fiap.wtcapp
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,27 +34,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import br.com.fiap.wtcapp.ui.login.LoginUiState
-import br.com.fiap.wtcapp.ui.login.LoginViewModel
+import br.com.fiap.wtcapp.ui.register.RegisterUiState
+import br.com.fiap.wtcapp.ui.register.RegisterViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class LoginActivity : ComponentActivity() {
+class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginRoute(
-                        onLoginSuccess = {
-                            startActivity(Intent(this, HomeActivity::class.java))
-                            finish()
-                        },
-                        onCreateAccount = {
-                            startActivity(Intent(this, RegisterActivity::class.java))
-                        },
+                    RegisterRoute(
+                        onRegistered = { finish() },
+                        onBackToLogin = { finish() },
                     )
                 }
             }
@@ -63,21 +57,20 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
-/**
- * Stateful entry point: connects the [LoginViewModel] to the stateless [LoginScreen],
- * and turns one-off state (success / error) into navigation and toasts.
- */
 @Composable
-fun LoginRoute(
-    onLoginSuccess: () -> Unit,
-    onCreateAccount: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel(),
+fun RegisterRoute(
+    onRegistered: () -> Unit,
+    onBackToLogin: () -> Unit,
+    viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(uiState.isLoggedIn) {
-        if (uiState.isLoggedIn) onLoginSuccess()
+    LaunchedEffect(uiState.isRegistered) {
+        if (uiState.isRegistered) {
+            Toast.makeText(context, "Conta criada! Faça login.", Toast.LENGTH_LONG).show()
+            onRegistered()
+        }
     }
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { message ->
@@ -86,25 +79,26 @@ fun LoginRoute(
         }
     }
 
-    LoginScreen(
+    RegisterScreen(
         state = uiState,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
+        onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
         onProfileChange = viewModel::onProfileChange,
-        onSubmit = viewModel::login,
-        onCreateAccount = onCreateAccount,
+        onSubmit = viewModel::register,
+        onBackToLogin = onBackToLogin,
     )
 }
 
-/** Pure UI: receives state and emits events. No business logic, fully previewable/testable. */
 @Composable
-fun LoginScreen(
-    state: LoginUiState,
+fun RegisterScreen(
+    state: RegisterUiState,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
     onProfileChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
-    onCreateAccount: () -> Unit,
+    onBackToLogin: () -> Unit,
 ) {
     Column(
         modifier =
@@ -116,16 +110,10 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "WTC",
-            fontSize = 40.sp,
+            text = "Criar conta",
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 4.dp),
-        )
-        Text(
-            text = "Acesse sua conta",
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 24.dp),
         )
 
@@ -180,6 +168,17 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(),
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = state.confirmPassword,
+            onValueChange = onConfirmPasswordChange,
+            label = { Text("Confirmar senha") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            visualTransformation = PasswordVisualTransformation(),
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
@@ -197,43 +196,31 @@ fun LoginScreen(
                 ),
         ) {
             Text(
-                text = if (state.isLoading) "Entrando..." else "Entrar",
+                text = if (state.isLoading) "Criando..." else "Criar conta",
                 fontWeight = FontWeight.Bold,
             )
         }
 
-        TextButton(onClick = onCreateAccount) {
-            Text("Não tem conta? Criar conta", color = MaterialTheme.colorScheme.onBackground)
+        TextButton(onClick = onBackToLogin) {
+            Text("Já tem conta? Entrar", color = MaterialTheme.colorScheme.onBackground)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun LoginScreenPreviewLight() {
-    WTCTheme(darkTheme = false) {
-        LoginScreen(
-            state = LoginUiState(email = "operador@wtc.com"),
-            onEmailChange = {},
-            onPasswordChange = {},
-            onProfileChange = {},
-            onSubmit = {},
-            onCreateAccount = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LoginScreenPreviewDark() {
+private fun RegisterScreenPreview() {
     WTCTheme(darkTheme = true) {
-        LoginScreen(
-            state = LoginUiState(email = "operador@wtc.com"),
-            onEmailChange = {},
-            onPasswordChange = {},
-            onProfileChange = {},
-            onSubmit = {},
-            onCreateAccount = {},
-        )
+        Surface {
+            RegisterScreen(
+                state = RegisterUiState(email = "novo@wtc.com"),
+                onEmailChange = {},
+                onPasswordChange = {},
+                onConfirmPasswordChange = {},
+                onProfileChange = {},
+                onSubmit = {},
+                onBackToLogin = {},
+            )
+        }
     }
 }

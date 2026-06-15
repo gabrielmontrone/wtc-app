@@ -9,6 +9,8 @@ import br.com.fiap.wtcapp.data.remote.dto.LoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.MessageResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.PageDto
+import br.com.fiap.wtcapp.data.remote.dto.RegisterRequestDto
+import br.com.fiap.wtcapp.data.remote.dto.RegisterResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.SegmentResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -26,6 +28,11 @@ interface WtcApi {
     suspend fun login(
         @Body request: LoginRequestDto,
     ): LoginResponseDto
+
+    @POST("api/v1/auth/register")
+    suspend fun register(
+        @Body request: RegisterRequestDto,
+    ): RegisterResponseDto
 
     @GET("customers")
     suspend fun listCustomers(
