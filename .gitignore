@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kotlin 2.0 build cache
+.kotlin
+
+# Local bare mirror used for publishing — must never be committed into the working tree
+/wtc-app.git/
