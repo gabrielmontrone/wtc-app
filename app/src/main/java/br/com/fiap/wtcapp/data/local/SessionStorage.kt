@@ -2,14 +2,16 @@ package br.com.fiap.wtcapp.data.local
 
 import android.content.Context
 import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Persists the authenticated session and exposes the bearer token to [AuthInterceptor].
- *
- * TODO (security wave): back this with EncryptedSharedPreferences.
+ * Persists the authenticated session encrypted at rest with EncryptedSharedPreferences
+ * (AES-256, key held in the Android Keystore) and exposes the bearer token to
+ * [br.com.fiap.wtcapp.data.remote.AuthInterceptor].
  */
 @Singleton
 class SessionStorage
@@ -18,7 +20,17 @@ class SessionStorage
         @ApplicationContext private val context: Context,
     ) {
         private val prefs by lazy {
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val masterKey =
+                MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+            EncryptedSharedPreferences.create(
+                context,
+                PREFS_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
         }
 
         fun save(
@@ -38,7 +50,7 @@ class SessionStorage
         fun clear() = prefs.edit { clear() }
 
         private companion object {
-            const val PREFS_NAME = "wtc_auth"
+            const val PREFS_NAME = "wtc_secure_session"
             const val TOKEN_KEY = "jwt_token"
             const val ROLE_KEY = "user_role"
         }

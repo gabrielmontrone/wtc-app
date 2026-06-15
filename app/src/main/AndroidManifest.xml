@@ -8,7 +8,7 @@
     <application
         android:name=".WtcApplication"
         android:allowBackup="true"
-        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WTC">
 
-        <!-- Tela inicial -->
+        <!-- Tela inicial (única activity exportada: launcher) -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true"
@@ -32,49 +32,49 @@
         <!-- Tela de login -->
         <activity
             android:name=".LoginActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Login"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".HomeActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Home"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".ContatosActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Contatos"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".ConversasActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Conversas"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".CampanhasActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Campanhas"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".SegmentosActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Segmentos"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".MensagensActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Mensagens"
             android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".CriarCampanhaActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Criar Campanha"
             android:theme="@style/Theme.WTC" />
 
@@ -85,7 +85,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
 
     </application>
 </manifest>

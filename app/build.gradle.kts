@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -91,6 +92,10 @@ dependencies {
     // Firebase (versions managed by the BOM)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.crashlytics)
+
+    // Security: encrypted session storage
+    implementation(libs.androidx.security.crypto)
 }
 
 // Static analysis ---------------------------------------------------------------
