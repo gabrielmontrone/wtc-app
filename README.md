@@ -1,34 +1,18 @@
-# WTC — App Android
+# WTC — Aplicativo Android
 
-Cliente Android nativo da plataforma de relacionamento e mensageria **WTC**.
-Desenvolvido em **Kotlin** com **Jetpack Compose**, consumindo a
-**[API WTC (backend)](https://github.com/gabrielmontrone/wtc)** via REST.
+Aplicativo Android oficial da **WTC**, plataforma de relacionamento e mensageria com clientes
+(CRM, campanhas e conversas). Desenvolvido em **Kotlin** com **Jetpack Compose** e integrado à
+API REST da plataforma.
 
-> 📱 Este é um aplicativo **mobile** — roda em um dispositivo/emulador Android, não no navegador.
-> O recrutador pode revisar o **código-fonte aqui** e testar a **[API ao vivo](https://github.com/gabrielmontrone/wtc#-live-demo)** diretamente.
+> 📱 Projeto **mobile** — executa em dispositivo/emulador Android.
 
 ---
 
-## 🎯 Como o projeto atende à vaga
+## Funcionalidades
 
-| Requisito da vaga | Situação | Onde no projeto |
-|---|---|---|
-| **Clean Architecture + MVVM** | ✅ | Camadas `domain/` · `data/` · `ui/` com MVVM em todas as telas |
-| **Lifecycle / ViewModel / Flow** | ✅ | `@HiltViewModel` expondo `StateFlow`, `collectAsStateWithLifecycle`, `viewModelScope` |
-| **Coroutines + APIs RESTful** | ✅ | Retrofit + `suspend` + `withContext(IO)` contra endpoints reais |
-| **Testes automatizados** | 🟡 Parcial | 28 testes **unitários** (ViewModels + use cases). Instrumentados/Compose UI no roadmap |
-| **Git / code review** | ✅ | Histórico limpo em commits por etapa, prontos para revisão |
-| CI/CD *(diferencial)* | ✅ | GitHub Actions: ktlint → detekt → testes → APK |
-| Observabilidade / crash reporting *(diferencial)* | ✅ | Firebase Crashlytics |
-| Segurança | ✅ | `EncryptedSharedPreferences`, `network-security-config`, `exported=false` |
-| Modularização *(diferencial)* | ⏳ Roadmap | Módulo único `:app` hoje |
-| Play Store *(diferencial)* | ⏳ Roadmap | Falta R8 + assinatura de release |
+Fluxo ponta a ponta integrado à API:
 
-## 🧭 Funcionalidades
-
-Fluxo real ponta a ponta, integrado à API:
-
-- **Login / Welcome** — autenticação JWT contra a API WTC.
+- **Login / Welcome** — autenticação JWT.
 - **Contatos** — listagem de clientes (CRM) com busca e filtros.
 - **Conversas → Mensagens** — _drill-down_ a partir de um contato: conversas do cliente,
   histórico de mensagens e envio de respostas.
@@ -36,7 +20,7 @@ Fluxo real ponta a ponta, integrado à API:
 - **Campanhas / Criar Campanha** — métricas de envio e criação de campanhas.
 - **Notificações push** — via Firebase Cloud Messaging.
 
-## 🧱 Arquitetura
+## Arquitetura
 
 **Clean Architecture + MVVM**, aplicada de forma consistente em todas as telas:
 
@@ -48,7 +32,10 @@ Fluxo real ponta a ponta, integrado à API:
   uma `Route` _stateful_, com estados explícitos de **carregando / erro / vazio / conteúdo** e `@Preview`.
 - **Injeção de dependência** com **Hilt** (KSP); _coroutines_ com `@IoDispatcher` injetado.
 
-## 🛠️ Stack tecnológica
+A separação em camadas mantém a regra de negócio independente de Android/rede e torna os
+_ViewModels_ e _use cases_ testáveis isoladamente.
+
+## Stack tecnológica
 
 | Área | Tecnologia |
 |---|---|
@@ -65,7 +52,7 @@ Fluxo real ponta a ponta, integrado à API:
 | Min SDK / Target | 27 / 36 |
 | Build | Gradle (Kotlin DSL) + version catalog |
 
-## 🗂️ Estrutura do projeto
+## Estrutura do projeto
 
 ```
 app/src/main/java/br/com/fiap/wtcapp/
@@ -80,15 +67,34 @@ app/src/main/java/br/com/fiap/wtcapp/
 └── ui/theme/          # tema Compose (Color, Type, Theme)
 ```
 
-## ✅ Qualidade, testes e CI
+## Build e execução
 
-- **Testes unitários** — 28 testes cobrindo todos os ViewModels e _use cases_ por meio de
+**Pré-requisitos:** Android Studio (versão recente), um emulador/dispositivo Android e a API WTC
+em execução.
+
+1. Abra o projeto no Android Studio e aguarde o _sync_ do Gradle.
+2. Configure a URL do backend em
+   [`app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt`](app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt):
+   ```kotlin
+   object ApiConfig {
+       // Backend local visto pelo emulador:
+       const val BASE_URL = "http://10.0.2.2:8080/"
+       // Ambiente publicado:
+       // const val BASE_URL = "https://<host>/"
+   }
+   ```
+   > No **emulador** Android, `10.0.2.2` aponta para o `localhost` da máquina host.
+   > Em um **dispositivo físico**, use o IP da rede local ou a URL HTTPS do ambiente.
+3. Adicione o `google-services.json` do projeto Firebase em `app/`.
+4. Execute o app (▶) no emulador/dispositivo.
+
+## Testes, qualidade e CI
+
+- **Testes unitários** — cobertura de todos os ViewModels e _use cases_ por meio de
   repositórios _fake_ em memória (`MainDispatcherRule` + `runTest`), exercitando os caminhos de
   sucesso / erro / vazio / validação.
 - **Análise estática** — ktlint + detekt (ajustados para Compose), bloqueando o build em violações.
-- **CI** — GitHub Actions roda `ktlintCheck → detekt → testDebugUnitTest → assembleDebug`.
-
-Comandos locais:
+- **CI** — GitHub Actions executa `ktlintCheck → detekt → testDebugUnitTest → assembleDebug`.
 
 ```bash
 ./gradlew ktlintCheck detekt        # estilo + análise estática
@@ -96,53 +102,22 @@ Comandos locais:
 ./gradlew :app:assembleDebug        # build
 ```
 
-## 🔒 Segurança & 📈 Observabilidade
+## Segurança e observabilidade
 
 - **Token JWT** persistido com `EncryptedSharedPreferences` (AES-256, chave no Android Keystore).
-- **`network-security-config`** permite tráfego em texto puro apenas para o backend de
+- **`network-security-config`** permite tráfego em texto puro apenas para o ambiente de
   desenvolvimento (`10.0.2.2` / `localhost`); TLS obrigatório no restante.
 - **`exported=false`** em todas as activities que não são _launcher_.
 - **Firebase Crashlytics** para relatórios de crash (coleta desabilitada em _debug_).
 
-## 🚀 Rodando localmente
+## Convenções
 
-**Pré-requisitos:** Android Studio (versão recente), um emulador/dispositivo Android e o
-[backend WTC](https://github.com/gabrielmontrone/wtc) em execução.
+- Commits pequenos e descritivos, agrupados por contexto.
+- _Pull requests_ revisados; build de CI verde como pré-requisito de merge.
+- Estilo de código garantido por ktlint/detekt.
 
-1. Abra o projeto no Android Studio e aguarde o _sync_ do Gradle.
-2. Aponte o app para o seu backend em
-   [`app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt`](app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt):
-   ```kotlin
-   object ApiConfig {
-       // Backend local visto pelo emulador:
-       const val BASE_URL = "http://10.0.2.2:8080/"
-       // Ou um backend publicado:
-       // const val BASE_URL = "https://<seu-servico>.onrender.com/"
-   }
-   ```
-   > No **emulador** Android, `10.0.2.2` aponta para o `localhost` da sua máquina.
-   > Em um **dispositivo físico**, use o IP da sua rede local ou a URL HTTPS publicada.
-3. Execute o app (▶) no emulador/dispositivo.
+## Roadmap
 
-> **Firebase:** o app espera um `google-services.json` em `app/`. Use o arquivo do seu próprio
-> projeto Firebase ao clonar este repositório.
-
-## 🧩 Histórico de desenvolvimento
-
-Entregue em commits limpos e _bisectáveis_, organizados por etapa:
-
-1. **Higiene & correções de build**
-2. **Clean Architecture + MVVM** (fatia vertical no Login)
-3. **Testes, análise estática & CI**
-4. **Migração de todas as telas para a API real** (Clean Arch + MVVM)
-5. **Segurança & relatórios de crash**
-
-## 🗺️ Roadmap
-
-- Testes **instrumentados / Compose UI** (+ testes de integração com MockWebServer)
-- **Modularização** (`:core`, `:data`, `:domain`, `:feature-*`)
-- **Polimento** — _design tokens_ de tema + `strings.xml`, nomes em inglês, R8 + assinatura de release
-
----
-
-_Projeto desenvolvido como parte das atividades acadêmicas na FIAP._
+- Testes **instrumentados / Compose UI** e testes de integração com MockWebServer.
+- **Modularização** (`:core`, `:data`, `:domain`, `:feature-*`).
+- _Design tokens_ de tema + `strings.xml`; R8 + assinatura de release.
