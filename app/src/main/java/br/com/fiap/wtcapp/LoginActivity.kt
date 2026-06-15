@@ -6,73 +6,132 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import br.com.fiap.wtcapp.ui.login.LoginUiState
+import br.com.fiap.wtcapp.ui.login.LoginViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WTCTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginScreen()
+                    LoginRoute(
+                        onLoginSuccess = {
+                            startActivity(Intent(this, HomeActivity::class.java))
+                            finish()
+                        },
+                    )
                 }
             }
         }
     }
 }
 
+/**
+ * Stateful entry point: connects the [LoginViewModel] to the stateless [LoginScreen],
+ * and turns one-off state (success / error) into navigation and toasts.
+ */
 @Composable
-fun LoginScreen() {
+fun LoginRoute(
+    onLoginSuccess: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var email by remember { mutableStateOf("") }
-    var senha by remember { mutableStateOf("") }
-    var perfilOperador by remember { mutableStateOf(true) }
 
+    LaunchedEffect(uiState.isLoggedIn) {
+        if (uiState.isLoggedIn) onLoginSuccess()
+    }
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.onErrorShown()
+        }
+    }
+
+    LoginScreen(
+        state = uiState,
+        onEmailChange = viewModel::onEmailChange,
+        onPasswordChange = viewModel::onPasswordChange,
+        onProfileChange = viewModel::onProfileChange,
+        onSubmit = viewModel::login,
+    )
+}
+
+/** Pure UI: receives state and emits events. No business logic, fully previewable/testable. */
+@Composable
+fun LoginScreen(
+    state: LoginUiState,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onProfileChange: (Boolean) -> Unit,
+    onSubmit: () -> Unit,
+) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(24.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "Login",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1976D2),
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp),
         )
 
-        // Alternância de perfil
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
-            TextButton(onClick = { perfilOperador = true }) {
+            TextButton(onClick = { onProfileChange(true) }) {
                 Text(
                     "Operador",
-                    fontWeight = if (perfilOperador) FontWeight.Bold else FontWeight.Normal,
-                    color = if (perfilOperador) Color(0xFF1976D2) else Color.Gray
+                    fontWeight = if (state.operatorProfile) FontWeight.Bold else FontWeight.Normal,
+                    color = if (state.operatorProfile) Color(0xFF1976D2) else Color.Gray,
                 )
             }
-            TextButton(onClick = { perfilOperador = false }) {
+            TextButton(onClick = { onProfileChange(false) }) {
                 Text(
                     "Cliente",
-                    fontWeight = if (!perfilOperador) FontWeight.Bold else FontWeight.Normal,
-                    color = if (!perfilOperador) Color(0xFF1976D2) else Color.Gray
+                    fontWeight = if (!state.operatorProfile) FontWeight.Bold else FontWeight.Normal,
+                    color = if (!state.operatorProfile) Color(0xFF1976D2) else Color.Gray,
                 )
             }
         }
@@ -80,42 +139,55 @@ fun LoginScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = state.email,
+            onValueChange = onEmailChange,
             label = { Text("E-mail") },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = senha,
-            onValueChange = { senha = it },
+            value = state.password,
+            onValueChange = onPasswordChange,
             label = { Text("Senha") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = {
-                if (email.isBlank() || senha.isBlank()) {
-                    Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
-                } else {
-                    // Navegar para Home (simulado)
-                    context.startActivity(Intent(context, HomeActivity::class.java))
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
+            onClick = onSubmit,
+            enabled = !state.isLoading,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
         ) {
-            Text("Entrar", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(
+                text = if (state.isLoading) "Entrando..." else "Entrar",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+            )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoginScreenPreview() {
+    WTCTheme {
+        LoginScreen(
+            state = LoginUiState(email = "operador@wtc.com"),
+            onEmailChange = {},
+            onPasswordChange = {},
+            onProfileChange = {},
+            onSubmit = {},
+        )
     }
 }
