@@ -1,5 +1,6 @@
 package br.com.fiap.wtcapp.data.remote
 
+import br.com.fiap.wtcapp.data.remote.dto.AuditResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.ChatMessageRequestDto
@@ -34,6 +35,7 @@ import retrofit2.http.Url
  * because the backend mixes `/customers` and `/api/v1/...` prefixes. Authenticated
  * endpoints rely on [AuthInterceptor] to attach the bearer token.
  */
+@Suppress("TooManyFunctions") // A typed REST surface legitimately has one function per endpoint.
 interface WtcApi {
     @POST("api/v1/auth/login")
     suspend fun login(
@@ -100,6 +102,9 @@ interface WtcApi {
         @Path("conversationId") conversationId: String,
         @Body request: ChatMessageRequestDto,
     ): MessageResponseDto
+
+    @GET("api/v1/audit")
+    suspend fun listAuditEvents(): List<AuditResponseDto>
 
     @POST("api/v1/attachments/upload-request")
     suspend fun requestUpload(

@@ -84,6 +84,12 @@
             android:label="Criar Campanha"
             android:theme="@style/Theme.WTC" />
 
+        <activity
+            android:name=".AuditoriaActivity"
+            android:exported="false"
+            android:label="Auditoria"
+            android:theme="@style/Theme.WTC" />
+
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

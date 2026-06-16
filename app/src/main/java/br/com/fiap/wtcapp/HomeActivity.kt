@@ -63,6 +63,7 @@ class HomeActivity : ComponentActivity() {
                         onOpenContatos = { open(ContatosActivity::class.java) },
                         onOpenCampanhas = { open(CampanhasActivity::class.java) },
                         onOpenSegmentos = { open(SegmentosActivity::class.java) },
+                        onOpenAuditoria = { open(AuditoriaActivity::class.java) },
                         themeMode = themeMode,
                         onThemeModeChange = themeViewModel::setThemeMode,
                     )
@@ -81,6 +82,7 @@ fun HomeScreen(
     onOpenContatos: () -> Unit,
     onOpenCampanhas: () -> Unit,
     onOpenSegmentos: () -> Unit,
+    onOpenAuditoria: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
 ) {
@@ -148,6 +150,13 @@ fun HomeScreen(
                     description = "Agrupamentos por tag, score e status",
                     emoji = "🧩",
                     onClick = onOpenSegmentos,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                MenuOption(
+                    title = "Auditoria",
+                    description = "Trilha de ações e eventos de compliance",
+                    emoji = "🛡️",
+                    onClick = onOpenAuditoria,
                 )
             }
         }
@@ -276,6 +285,7 @@ private fun HomeScreenPreview() {
             onOpenContatos = {},
             onOpenCampanhas = {},
             onOpenSegmentos = {},
+            onOpenAuditoria = {},
             themeMode = ThemeMode.SYSTEM,
             onThemeModeChange = {},
         )
