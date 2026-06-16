@@ -1,10 +1,15 @@
 # WTC — Aplicativo Android
 
 Aplicativo Android oficial da **WTC**, plataforma de relacionamento e mensageria com clientes
-(CRM, campanhas e conversas). Desenvolvido em **Kotlin** com **Jetpack Compose** e integrado à
-API REST da plataforma.
+(CRM, campanhas e conversas), com uma **camada de Trust & Safety / Compliance** sobre a
+mensageria. Desenvolvido em **Kotlin** com **Jetpack Compose** e integrado à API REST da plataforma.
 
 > 📱 Projeto **mobile** — executa em dispositivo/emulador Android.
+
+A operação de mensageria continua sendo o produto; sobre ela há controles de **proteção de dados,
+detecção de atividade suspeita e auditoria** — os mesmos controles que um time de prevenção a
+fraudes / AML / KYC embute dentro de produtos reais. Veja
+[**Trust & Safety / Compliance**](#trust--safety--compliance).
 
 ---
 
@@ -12,13 +17,45 @@ API REST da plataforma.
 
 Fluxo ponta a ponta integrado à API:
 
-- **Login / Welcome** — autenticação JWT.
+- **Login / Welcome** — autenticação JWT e **"Continuar com Google"** (Credential Manager).
 - **Contatos** — listagem de clientes (CRM) com busca e filtros.
 - **Conversas → Mensagens** — _drill-down_ a partir de um contato: conversas do cliente,
-  histórico de mensagens e envio de respostas.
+  histórico de mensagens e envio de respostas. Inclui:
+  - **Atalho `/`** — digite `/` + o nome de uma campanha para inserir a mensagem pronta.
+  - **Envio de fotos** — seletor de imagem → upload pré-assinado (S3/MinIO) → exibição _inline_ (Coil).
+  - **Scan DLP** — alerta antes de enviar dados sensíveis (ver Trust & Safety abaixo).
 - **Segmentos** — segmentação de clientes.
 - **Campanhas / Criar Campanha** — métricas de envio e criação de campanhas.
+- **Auditoria** — trilha de ações e eventos de _compliance_ (tela voltada ao operador).
 - **Notificações push** — via Firebase Cloud Messaging.
+
+## Trust & Safety / Compliance
+
+Camada de controles sobre a mensageria, sem alterar a regra de negócio. Toda mensagem passa por um
+**pipeline de detecção + auditoria**:
+
+- **DLP (Data Loss Prevention)** — um analisador determinístico (`RiskAnalyzer`) examina o conteúdo
+  e sinaliza **CPF, CNPJ, números de cartão (validados por Luhn) e links suspeitos**
+  (não-HTTPS, encurtadores, host por IP). Cada mensagem recebe um **nível de risco**
+  (`NONE/LOW/MEDIUM/HIGH`) e _flags_.
+  - **Defesa em profundidade:** um espelho _on-device_ (`MessageRiskAnalyzer`) **avisa o operador
+    antes do envio** ("Enviar mesmo assim?"); o **backend é a fonte da verdade**, persiste o
+    resultado na mensagem e exibe **selos ⚠** no chat.
+- **Auditoria** — ações sensíveis (login, envio de mensagem, criação de cliente) e, em especial,
+  **mensagens suspeitas** (`SUSPICIOUS_MESSAGE`) são gravadas em uma trilha imutável, consultável
+  na tela **Auditoria** (`GET /api/v1/audit`).
+- **Proteção de dados** — sessão (JWT) em `EncryptedSharedPreferences` (AES-256); TLS obrigatório
+  fora do ambiente de desenvolvimento.
+
+### Mapa de aderência à vaga (prevenção a fraudes / AML / KYC)
+
+| Recurso | Responsabilidade da área |
+|---|---|
+| Scan DLP + selos de risco | Monitoramento e **identificação de atividades suspeitas** |
+| Aviso antes do envio (CPF/CNPJ/cartão) | **Proteção de dados** dos clientes; redução de perdas |
+| Trilha de auditoria (tela Auditoria) | **Auditoria/conformidade**; _accountability_ |
+| JWT criptografado + TLS + `exported=false` | **Segurança** e controles de conformidade |
+| Login com Google (verificação de _ID token_) | Autenticação forte / onboarding |
 
 ## Arquitetura
 
@@ -44,6 +81,8 @@ _ViewModels_ e _use cases_ testáveis isoladamente.
 | Arquitetura | Clean Architecture + MVVM |
 | Assíncrono | Coroutines + Flow |
 | Rede | Retrofit + OkHttp + kotlinx.serialization |
+| Imagens | Coil (carregamento de fotos no chat) |
+| Autenticação | JWT + Google Sign-In (androidx.credentials) |
 | DI | Hilt (KSP) |
 | Firebase | Cloud Messaging + Crashlytics |
 | Testes | JUnit4 + coroutines-test |
@@ -56,13 +95,13 @@ _ViewModels_ e _use cases_ testáveis isoladamente.
 
 ```
 app/src/main/java/br/com/fiap/wtcapp/
-├── ui/<feature>/      # UiState + ViewModel + Route/Screen (login, contatos,
-│                      #   conversas, mensagens, campanhas, criarcampanha, segmentos, common)
-├── domain/            # model, repository (interfaces), usecase
+├── ui/<feature>/      # UiState + ViewModel + Route/Screen (login, contatos, conversas,
+│                      #   mensagens, campanhas, criarcampanha, segmentos, auditoria, common)
+├── domain/            # model, repository (interfaces), usecase, compliance (MessageRiskAnalyzer)
 ├── data/              # remote (WtcApi, AuthInterceptor, dto), repository (impls), local (SessionStorage)
 ├── di/                # NetworkModule, RepositoryModule, DispatchersModule
 ├── api/ApiConfig.kt   # BASE_URL
-├── *Activity.kt       # hosts Compose finos (@AndroidEntryPoint)
+├── *Activity.kt       # hosts Compose finos (@AndroidEntryPoint) — inclui AuditoriaActivity
 ├── WtcApplication.kt  # @HiltAndroidApp
 └── ui/theme/          # tema Compose (Color, Type, Theme)
 ```
@@ -98,7 +137,11 @@ em execução.
    > e offline). Consulte o [README do backend](https://github.com/gabrielmontrone/wtc) para
    > subir a API e exemplos de uso (`curl`/Swagger).
 3. Adicione o `google-services.json` do projeto Firebase em `app/`.
-4. Execute o app (▶) no emulador/dispositivo.
+4. _(Opcional)_ **Login com Google** — habilite o provedor Google no Firebase, registre o SHA-1 do
+   app e preencha o **Web client ID** em `app/src/main/res/values/strings.xml`
+   (`google_web_client_id`) e no backend (`GOOGLE_CLIENT_ID`). Sem isso, o botão fica desabilitado
+   com uma mensagem clara.
+5. Execute o app (▶) no emulador/dispositivo.
 
 ## Testes, qualidade e CI
 
@@ -121,6 +164,8 @@ em execução.
   desenvolvimento (`10.0.2.2` / `localhost`); TLS obrigatório no restante.
 - **`exported=false`** em todas as activities que não são _launcher_.
 - **Firebase Crashlytics** para relatórios de crash (coleta desabilitada em _debug_).
+- **DLP + auditoria** — detecção de dados sensíveis e trilha de eventos
+  (ver [Trust & Safety / Compliance](#trust--safety--compliance)).
 
 ## Convenções
 
