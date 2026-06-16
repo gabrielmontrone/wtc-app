@@ -13,6 +13,15 @@ data class CustomerResponseDto(
     val ativo: Boolean = true,
 )
 
+@Serializable
+data class CustomerRequestDto(
+    val name: String,
+    val document: String,
+    val vip: Boolean,
+    val fidelidade: Boolean,
+    val ativo: Boolean,
+)
+
 fun CustomerResponseDto.toDomain(): Customer =
     Customer(
         id = id,

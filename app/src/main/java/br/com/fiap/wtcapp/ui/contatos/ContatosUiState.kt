@@ -17,6 +17,7 @@ data class ContatosUiState(
     val customers: List<Customer> = emptyList(),
     val search: String = "",
     val filter: ContatoFiltro = ContatoFiltro.TODOS,
+    val addForm: AddContactForm? = null,
 ) {
     /** Contacts after applying the active filter and the search term. */
     val visibleCustomers: List<Customer>
@@ -39,3 +40,13 @@ data class ContatosUiState(
             customer.name.contains(search, ignoreCase = true) ||
             customer.document.contains(search, ignoreCase = true)
 }
+
+/** State of the "Novo contato" dialog. Present only while the dialog is open. */
+data class AddContactForm(
+    val name: String = "",
+    val document: String = "",
+    val vip: Boolean = false,
+    val loyalty: Boolean = false,
+    val active: Boolean = true,
+    val isSaving: Boolean = false,
+)

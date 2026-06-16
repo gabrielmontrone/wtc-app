@@ -3,6 +3,7 @@ package br.com.fiap.wtcapp.ui.contatos
 import br.com.fiap.wtcapp.FakeCustomerRepository
 import br.com.fiap.wtcapp.MainDispatcherRule
 import br.com.fiap.wtcapp.domain.model.Customer
+import br.com.fiap.wtcapp.domain.usecase.CreateCustomerUseCase
 import br.com.fiap.wtcapp.domain.usecase.GetCustomersUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -30,7 +31,7 @@ class ContatosViewModelTest {
         runTest {
             val repository = FakeCustomerRepository(Result.success(listOf(customer("1", "Ana"))))
 
-            val viewModel = ContatosViewModel(GetCustomersUseCase(repository))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
 
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
@@ -43,7 +44,7 @@ class ContatosViewModelTest {
         runTest {
             val repository = FakeCustomerRepository(Result.failure(RuntimeException("rede caiu")))
 
-            val viewModel = ContatosViewModel(GetCustomersUseCase(repository))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
 
             assertEquals("rede caiu", viewModel.uiState.value.errorMessage)
         }
@@ -61,7 +62,7 @@ class ContatosViewModelTest {
                         ),
                     ),
                 )
-            val viewModel = ContatosViewModel(GetCustomersUseCase(repository))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
 
             viewModel.onFilterChange(ContatoFiltro.VIP)
             viewModel.onSearchChange("ana")
@@ -82,10 +83,49 @@ class ContatosViewModelTest {
                         ),
                     ),
                 )
-            val viewModel = ContatosViewModel(GetCustomersUseCase(repository))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
 
             viewModel.onFilterChange(ContatoFiltro.INATIVO)
 
             assertTrue(viewModel.uiState.value.visibleCustomers.all { !it.active })
+        }
+
+    @Test
+    fun `saving a valid contact creates it and reloads the list`() =
+        runTest {
+            val repository = FakeCustomerRepository(Result.success(emptyList()))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
+            val loadsAfterInit = repository.callCount
+
+            viewModel.onAddContactClick()
+            viewModel.onFormNameChange("Maria Silva")
+            viewModel.onFormDocumentChange("12345678901")
+            viewModel.onFormVipChange(true)
+            viewModel.saveContact()
+
+            assertEquals(1, repository.createCount)
+            assertEquals("Maria Silva", repository.lastCreated?.name)
+            assertTrue(repository.lastCreated?.vip == true)
+            // dialog closed and the list was reloaded
+            assertEquals(null, viewModel.uiState.value.addForm)
+            assertEquals(loadsAfterInit + 1, repository.callCount)
+        }
+
+    @Test
+    fun `invalid contact surfaces a validation error without calling the repository`() =
+        runTest {
+            val repository = FakeCustomerRepository(Result.success(emptyList()))
+            val viewModel = ContatosViewModel(GetCustomersUseCase(repository), CreateCustomerUseCase(repository))
+
+            viewModel.onAddContactClick()
+            viewModel.onFormNameChange("Jo")
+            viewModel.onFormDocumentChange("123")
+            viewModel.saveContact()
+
+            assertEquals(0, repository.createCount)
+            assertEquals("Nome deve ter ao menos 3 caracteres", viewModel.uiState.value.errorMessage)
+            // dialog stays open so the user can fix the input
+            assertTrue(viewModel.uiState.value.addForm != null)
+            assertFalse(viewModel.uiState.value.addForm!!.isSaving)
         }
 }

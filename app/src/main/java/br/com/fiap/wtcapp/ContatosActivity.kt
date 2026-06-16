@@ -19,20 +19,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.fiap.wtcapp.domain.model.Customer
 import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
+import br.com.fiap.wtcapp.ui.contatos.AddContactForm
 import br.com.fiap.wtcapp.ui.contatos.ContatoFiltro
 import br.com.fiap.wtcapp.ui.contatos.ContatosUiState
 import br.com.fiap.wtcapp.ui.contatos.ContatosViewModel
@@ -82,7 +94,21 @@ fun ContatosRoute(
         onSearchChange = viewModel::onSearchChange,
         onFilterChange = viewModel::onFilterChange,
         onContactClick = onContactClick,
+        onAddContactClick = viewModel::onAddContactClick,
     )
+
+    uiState.addForm?.let { form ->
+        AddContactDialog(
+            form = form,
+            onNameChange = viewModel::onFormNameChange,
+            onDocumentChange = viewModel::onFormDocumentChange,
+            onVipChange = viewModel::onFormVipChange,
+            onLoyaltyChange = viewModel::onFormLoyaltyChange,
+            onActiveChange = viewModel::onFormActiveChange,
+            onSave = viewModel::saveContact,
+            onDismiss = viewModel::onAddContactDismiss,
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -92,64 +118,147 @@ fun ContatosScreen(
     onSearchChange: (String) -> Unit,
     onFilterChange: (ContatoFiltro) -> Unit,
     onContactClick: (String) -> Unit,
+    onAddContactClick: () -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
-    ) {
-        Text(
-            text = "Contatos",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-
-        OutlinedTextField(
-            value = state.search,
-            onValueChange = onSearchChange,
-            label = { Text("Buscar por nome ou documento") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddContactClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Novo contato")
+            }
+        },
+    ) { innerPadding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(24.dp),
         ) {
-            ContatoFiltro.entries.forEach { filtro ->
-                ContatoFilterChip(
-                    label = filtro.label,
-                    selected = state.filter == filtro,
-                    onClick = { onFilterChange(filtro) },
-                )
+            Text(
+                text = "Contatos",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+
+            OutlinedTextField(
+                value = state.search,
+                onValueChange = onSearchChange,
+                label = { Text("Buscar por nome ou documento") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                ContatoFiltro.entries.forEach { filtro ->
+                    ContatoFilterChip(
+                        label = filtro.label,
+                        selected = state.filter == filtro,
+                        onClick = { onFilterChange(filtro) },
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            when {
+                state.isLoading -> CenteredContent { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
+                state.visibleCustomers.isEmpty() ->
+                    CenteredContent {
+                        Text("Nenhum contato encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                else ->
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(state.visibleCustomers, key = { it.id }) { customer ->
+                            ContactCard(customer = customer, onClick = { onContactClick(customer.id) })
+                        }
+                    }
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
+@Composable
+fun AddContactDialog(
+    form: AddContactForm,
+    onNameChange: (String) -> Unit,
+    onDocumentChange: (String) -> Unit,
+    onVipChange: (Boolean) -> Unit,
+    onLoyaltyChange: (Boolean) -> Unit,
+    onActiveChange: (Boolean) -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { if (!form.isSaving) onDismiss() },
+        title = { Text("Novo contato") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = form.name,
+                    onValueChange = onNameChange,
+                    label = { Text("Nome") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                OutlinedTextField(
+                    value = form.document,
+                    onValueChange = { onDocumentChange(it.filter(Char::isDigit)) },
+                    label = { Text("Documento (CPF/CNPJ)") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                ContactSwitchRow("VIP", form.vip, !form.isSaving, onVipChange)
+                ContactSwitchRow("Fidelidade", form.loyalty, !form.isSaving, onLoyaltyChange)
+                ContactSwitchRow("Ativo", form.active, !form.isSaving, onActiveChange)
+            }
+        },
+        confirmButton = {
+            Button(onClick = onSave, enabled = !form.isSaving) {
+                Text(if (form.isSaving) "Salvando..." else "Salvar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !form.isSaving) { Text("Cancelar") }
+        },
+    )
+}
 
-        when {
-            state.isLoading -> CenteredContent { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
-            state.visibleCustomers.isEmpty() ->
-                CenteredContent {
-                    Text("Nenhum contato encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            else ->
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(state.visibleCustomers, key = { it.id }) { customer ->
-                        ContactCard(customer = customer, onClick = { onContactClick(customer.id) })
-                    }
-                }
-        }
+@Composable
+private fun ContactSwitchRow(
+    label: String,
+    checked: Boolean,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurface)
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 
@@ -253,6 +362,7 @@ private fun ContatosScreenPreview() {
                 onSearchChange = {},
                 onFilterChange = {},
                 onContactClick = {},
+                onAddContactClick = {},
             )
         }
     }

@@ -1,6 +1,7 @@
 package br.com.fiap.wtcapp.data.repository
 
 import br.com.fiap.wtcapp.data.remote.WtcApi
+import br.com.fiap.wtcapp.data.remote.dto.CustomerRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.Customer
@@ -24,6 +25,27 @@ class CustomerRepositoryImpl
                 runCatching {
                     api.listCustomers(vip, loyalty, active, page = 0, size = PAGE_SIZE)
                         .content.map { it.toDomain() }
+                }
+            }
+
+        override suspend fun createCustomer(
+            name: String,
+            document: String,
+            vip: Boolean,
+            loyalty: Boolean,
+            active: Boolean,
+        ): Result<Customer> =
+            withContext(ioDispatcher) {
+                runCatching {
+                    api.createCustomer(
+                        CustomerRequestDto(
+                            name = name,
+                            document = document,
+                            vip = vip,
+                            fidelidade = loyalty,
+                            ativo = active,
+                        ),
+                    ).toDomain()
                 }
             }
 

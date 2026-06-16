@@ -4,6 +4,7 @@ import br.com.fiap.wtcapp.data.remote.dto.CampaignRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.ChatMessageRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.ConversationResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.CustomerRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CustomerResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginResponseDto
@@ -42,6 +43,11 @@ interface WtcApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
     ): PageDto<CustomerResponseDto>
+
+    @POST("customers")
+    suspend fun createCustomer(
+        @Body request: CustomerRequestDto,
+    ): CustomerResponseDto
 
     @GET("api/v1/segments")
     suspend fun listSegments(): List<SegmentResponseDto>

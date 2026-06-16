@@ -8,4 +8,12 @@ interface CustomerRepository {
         loyalty: Boolean? = null,
         active: Boolean? = null,
     ): Result<List<Customer>>
+
+    suspend fun createCustomer(
+        name: String,
+        document: String,
+        vip: Boolean,
+        loyalty: Boolean,
+        active: Boolean,
+    ): Result<Customer>
 }
