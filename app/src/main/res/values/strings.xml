@@ -6,5 +6,5 @@
       (Authentication > Sign-in method > Google). Required for "Continuar com Google".
       Leave empty to keep the button disabled until it is configured.
     -->
-    <string name="google_web_client_id"></string>
+    <string name="google_web_client_id">813891107448-e8cp6c6mpadngglmajbt3r7f0m5048p0.apps.googleusercontent.com</string>
 </resources>

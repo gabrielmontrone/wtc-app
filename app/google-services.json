@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "431548597817",
-    "project_id": "wtc-app-d60dd",
-    "storage_bucket": "wtc-app-d60dd.firebasestorage.app"
+    "project_number": "813891107448",
+    "project_id": "wtc-app-9a596",
+    "storage_bucket": "wtc-app-9a596.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:431548597817:android:e5613dc903be43b54e2fe8",
+        "mobilesdk_app_id": "1:813891107448:android:166382ba29c77b008b4b8d",
         "android_client_info": {
           "package_name": "br.com.fiap.wtcapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "813891107448-e7kq6llcdhvundu2gf1b2kddb9o5594l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.fiap.wtcapp",
+            "certificate_hash": "ef5e5f17e28d285519718a3dc876940adcc243ad"
+          }
+        },
+        {
+          "client_id": "813891107448-e8cp6c6mpadngglmajbt3r7f0m5048p0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCCfhFJdiymPAx_REflAQHQ47zCU50NZd4"
+          "current_key": "AIzaSyDYlWm1edfHphW72Qeu4IWXZo4gfNnpalA"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813891107448-e8cp6c6mpadngglmajbt3r7f0m5048p0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
