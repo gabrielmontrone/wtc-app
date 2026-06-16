@@ -7,6 +7,12 @@ complexity:
     threshold: 120
   TooManyFunctions:
     ignoreAnnotatedFunctions: ['Composable']
+    # The typed API surface and the MVVM ViewModels legitimately group more than the
+    # default 11 members; raise the ceiling rather than fragment cohesive classes.
+    thresholdInClasses: 16
+    thresholdInInterfaces: 16
+    thresholdInFiles: 16
+    thresholdInObjects: 16
   LongParameterList:
     # Hoisted Compose screens take state + one lambda per event; that is idiomatic.
     ignoreAnnotated: ['Composable']

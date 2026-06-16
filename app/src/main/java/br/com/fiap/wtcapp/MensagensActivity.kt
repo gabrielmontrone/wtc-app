@@ -1,46 +1,67 @@
 package br.com.fiap.wtcapp
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import br.com.fiap.wtcapp.domain.model.Campaign
 import br.com.fiap.wtcapp.domain.model.ChatMessage
 import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
 import br.com.fiap.wtcapp.ui.mensagens.MensagensUiState
 import br.com.fiap.wtcapp.ui.mensagens.MensagensViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
+import coil.compose.AsyncImage
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MensagensActivity : ComponentActivity() {
@@ -63,6 +84,25 @@ class MensagensActivity : ComponentActivity() {
 @Composable
 fun MensagensRoute(viewModel: MensagensViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val photoPicker =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+            if (uri != null) {
+                scope.launch {
+                    val payload =
+                        withContext(Dispatchers.IO) {
+                            val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                            val type = context.contentResolver.getType(uri) ?: "image/jpeg"
+                            bytes?.let { Triple("foto_${System.currentTimeMillis()}", type, it) }
+                        }
+                    payload?.let { (name, type, bytes) ->
+                        viewModel.onPhotoPicked(name, type, bytes)
+                    }
+                }
+            }
+        }
 
     LaunchedErrorToast(uiState.errorMessage) { viewModel.onErrorShown() }
 
@@ -70,6 +110,13 @@ fun MensagensRoute(viewModel: MensagensViewModel = hiltViewModel()) {
         state = uiState,
         onReplyChange = viewModel::onReplyChange,
         onSend = viewModel::send,
+        onCampaignSelected = viewModel::onCampaignSelected,
+        onRemovePendingPhoto = viewModel::onRemovePendingPhoto,
+        onPickPhoto = {
+            photoPicker.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+            )
+        },
     )
 }
 
@@ -78,6 +125,9 @@ fun MensagensScreen(
     state: MensagensUiState,
     onReplyChange: (String) -> Unit,
     onSend: () -> Unit,
+    onCampaignSelected: (Campaign) -> Unit,
+    onRemovePendingPhoto: () -> Unit,
+    onPickPhoto: () -> Unit,
 ) {
     Column(
         modifier =
@@ -123,16 +173,42 @@ fun MensagensScreen(
                 }
         }
 
+        // Campaign quick-insert: shown when the reply starts with "/".
+        if (state.campaignSuggestions.isNotEmpty()) {
+            CampaignSuggestions(
+                campaigns = state.campaignSuggestions,
+                onCampaignSelected = onCampaignSelected,
+            )
+        }
+
+        state.pendingImageUrl?.let { url ->
+            PendingPhotoPreview(url = url, onRemove = onRemovePendingPhoto)
+        }
+
         Spacer(modifier = Modifier.padding(top = 8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            IconButton(onClick = onPickPhoto, enabled = !state.isUploading) {
+                if (state.isUploading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Anexar foto",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             OutlinedTextField(
                 value = state.reply,
                 onValueChange = onReplyChange,
-                label = { Text("Responder") },
+                label = { Text("Responder (use / para campanhas)") },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
             )
@@ -154,6 +230,72 @@ fun MensagensScreen(
 }
 
 @Composable
+private fun CampaignSuggestions(
+    campaigns: List<Campaign>,
+    onCampaignSelected: (Campaign) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        LazyColumn(modifier = Modifier.heightIn(max = 180.dp)) {
+            items(campaigns, key = { it.id }) { campaign ->
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onCampaignSelected(campaign) }
+                            .padding(12.dp),
+                ) {
+                    Text(
+                        "/${campaign.name}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        campaign.content,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PendingPhotoPreview(
+    url: String,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AsyncImage(
+            model = url,
+            contentDescription = "Foto anexada",
+            contentScale = ContentScale.Crop,
+            modifier =
+                Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+        )
+        IconButton(onClick = onRemove) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Remover foto",
+                tint = MaterialTheme.colorScheme.error,
+            )
+        }
+    }
+}
+
+@Composable
 fun MensagemCard(message: ChatMessage) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -170,7 +312,22 @@ fun MensagemCard(message: ChatMessage) {
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            Text(message.content, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            message.imageUrl?.takeIf { it.isNotBlank() }?.let { url ->
+                AsyncImage(
+                    model = url,
+                    contentDescription = "Foto da mensagem",
+                    contentScale = ContentScale.Fit,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 220.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                )
+                Spacer(modifier = Modifier.padding(top = 4.dp))
+            }
+            message.content.takeIf { it.isNotBlank() }?.let {
+                Text(it, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            }
             message.senderRole?.let {
                 Text("De: $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -194,6 +351,9 @@ private fun MensagensScreenPreview() {
                     ),
                 onReplyChange = {},
                 onSend = {},
+                onCampaignSelected = {},
+                onRemovePendingPhoto = {},
+                onPickPhoto = {},
             )
         }
     }

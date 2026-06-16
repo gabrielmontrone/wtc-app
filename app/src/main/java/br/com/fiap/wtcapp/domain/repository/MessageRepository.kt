@@ -8,5 +8,6 @@ interface MessageRepository {
     suspend fun sendReply(
         conversationId: String,
         content: String,
+        imageUrl: String? = null,
     ): Result<ChatMessage>
 }

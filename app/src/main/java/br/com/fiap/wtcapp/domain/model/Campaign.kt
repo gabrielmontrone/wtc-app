@@ -10,4 +10,6 @@ data class Campaign(
     val totalSends: Long,
     val successSends: Long,
     val responseCount: Long,
+    /** The reusable message body, inserted into a chat reply via the "/" shortcut. */
+    val content: String = "",
 )

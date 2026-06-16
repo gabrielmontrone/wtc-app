@@ -10,11 +10,13 @@ data class MessageResponseDto(
     val content: String = "",
     val status: String? = null,
     val senderRole: String? = null,
+    val imageUrl: String? = null,
 )
 
 @Serializable
 data class ChatMessageRequestDto(
     val content: String,
+    val imageUrl: String? = null,
 )
 
 fun MessageResponseDto.toDomain(): ChatMessage =
@@ -24,4 +26,5 @@ fun MessageResponseDto.toDomain(): ChatMessage =
         content = content,
         status = status,
         senderRole = senderRole,
+        imageUrl = imageUrl,
     )

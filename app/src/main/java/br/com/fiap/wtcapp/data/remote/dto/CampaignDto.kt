@@ -39,4 +39,5 @@ fun CampaignResponseDto.toDomain(): Campaign =
         totalSends = totalSends,
         successSends = successSends,
         responseCount = responseCount,
+        content = content,
     )

@@ -21,6 +21,7 @@ ktlint = "12.1.1"
 detekt = "1.23.7"
 securityCrypto = "1.1.0-alpha06"
 crashlyticsPlugin = "3.0.2"
+coil = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,9 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 
 # Security
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+
+# Image loading
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # Networking
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

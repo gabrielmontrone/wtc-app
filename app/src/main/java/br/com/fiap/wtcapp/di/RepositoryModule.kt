@@ -1,11 +1,13 @@
 package br.com.fiap.wtcapp.di
 
+import br.com.fiap.wtcapp.data.repository.AttachmentRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.AuthRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.CampaignRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.ConversationRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.CustomerRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.MessageRepositoryImpl
 import br.com.fiap.wtcapp.data.repository.SegmentRepositoryImpl
+import br.com.fiap.wtcapp.domain.repository.AttachmentRepository
 import br.com.fiap.wtcapp.domain.repository.AuthRepository
 import br.com.fiap.wtcapp.domain.repository.CampaignRepository
 import br.com.fiap.wtcapp.domain.repository.ConversationRepository
@@ -44,4 +46,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMessageRepository(impl: MessageRepositoryImpl): MessageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAttachmentRepository(impl: AttachmentRepositoryImpl): AttachmentRepository
 }

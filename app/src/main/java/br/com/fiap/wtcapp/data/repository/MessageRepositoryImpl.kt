@@ -24,8 +24,11 @@ class MessageRepositoryImpl
         override suspend fun sendReply(
             conversationId: String,
             content: String,
+            imageUrl: String?,
         ): Result<ChatMessage> =
             withContext(ioDispatcher) {
-                runCatching { api.sendReply(conversationId, ChatMessageRequestDto(content)).toDomain() }
+                runCatching {
+                    api.sendReply(conversationId, ChatMessageRequestDto(content, imageUrl)).toDomain()
+                }
             }
     }

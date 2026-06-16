@@ -16,12 +16,20 @@ class AuthInterceptor
         private val sessionStorage: SessionStorage,
     ) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
+            val original = chain.request()
+
+            // Pre-signed uploads carry their own signature; never attach our bearer token.
+            if (original.header(WtcApi.NO_AUTH_HEADER) != null) {
+                val cleaned = original.newBuilder().removeHeader(WtcApi.NO_AUTH_HEADER).build()
+                return chain.proceed(cleaned)
+            }
+
             val token = sessionStorage.token()
             val request =
                 if (token.isNullOrBlank()) {
-                    chain.request()
+                    original
                 } else {
-                    chain.request().newBuilder()
+                    original.newBuilder()
                         .addHeader("Authorization", "Bearer $token")
                         .build()
                 }

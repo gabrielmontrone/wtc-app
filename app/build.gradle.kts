@@ -96,6 +96,9 @@ dependencies {
 
     // Security: encrypted session storage
     implementation(libs.androidx.security.crypto)
+
+    // Image loading (remote photos in the chat)
+    implementation(libs.coil.compose)
 }
 
 // Static analysis ---------------------------------------------------------------

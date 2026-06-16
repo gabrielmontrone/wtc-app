@@ -12,6 +12,8 @@ class FakeMessageRepository(
         private set
     var lastSentContent: String? = null
         private set
+    var lastSentImageUrl: String? = null
+        private set
 
     override suspend fun messages(conversationId: String): Result<List<ChatMessage>> {
         lastConversationId = conversationId
@@ -21,8 +23,10 @@ class FakeMessageRepository(
     override suspend fun sendReply(
         conversationId: String,
         content: String,
+        imageUrl: String?,
     ): Result<ChatMessage> {
         lastSentContent = content
+        lastSentImageUrl = imageUrl
         return sendResult
     }
 }

@@ -12,11 +12,12 @@ class SendReplyUseCase
         suspend operator fun invoke(
             conversationId: String,
             content: String,
+            imageUrl: String? = null,
         ): Result<ChatMessage> {
             val trimmed = content.trim()
-            if (trimmed.isBlank()) {
-                return Result.failure(IllegalArgumentException("Digite uma mensagem"))
+            if (trimmed.isBlank() && imageUrl.isNullOrBlank()) {
+                return Result.failure(IllegalArgumentException("Digite uma mensagem ou anexe uma foto"))
             }
-            return repository.sendReply(conversationId, trimmed)
+            return repository.sendReply(conversationId, trimmed, imageUrl?.takeIf { it.isNotBlank() })
         }
     }
