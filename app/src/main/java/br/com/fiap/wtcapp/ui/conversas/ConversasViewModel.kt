@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.fiap.wtcapp.ConversasActivity
 import br.com.fiap.wtcapp.domain.usecase.GetConversationsUseCase
+import br.com.fiap.wtcapp.domain.usecase.StartConversationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ class ConversasViewModel
     @Inject
     constructor(
         private val getConversations: GetConversationsUseCase,
+        private val startConversation: StartConversationUseCase,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val customerId: String = savedStateHandle[ConversasActivity.EXTRA_CUSTOMER_ID] ?: ""
@@ -39,6 +41,24 @@ class ConversasViewModel
                     onFailure = { error ->
                         _uiState.update {
                             it.copy(isLoading = false, errorMessage = error.message ?: "Erro ao carregar conversas")
+                        }
+                    },
+                )
+            }
+        }
+
+        fun startNewConversation() {
+            if (_uiState.value.isStarting) return
+            _uiState.update { it.copy(isStarting = true, errorMessage = null) }
+            viewModelScope.launch {
+                startConversation(customerId).fold(
+                    onSuccess = {
+                        _uiState.update { it.copy(isStarting = false) }
+                        load()
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(isStarting = false, errorMessage = error.message ?: "Erro ao iniciar conversa")
                         }
                     },
                 )

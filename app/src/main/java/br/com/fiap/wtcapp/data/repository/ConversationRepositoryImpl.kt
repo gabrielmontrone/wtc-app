@@ -1,6 +1,7 @@
 package br.com.fiap.wtcapp.data.repository
 
 import br.com.fiap.wtcapp.data.remote.WtcApi
+import br.com.fiap.wtcapp.data.remote.dto.ConversationRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.Conversation
@@ -18,5 +19,10 @@ class ConversationRepositoryImpl
         override suspend fun conversations(customerId: String): Result<List<Conversation>> =
             withContext(ioDispatcher) {
                 runCatching { api.listConversations(customerId).map { it.toDomain() } }
+            }
+
+        override suspend fun startConversation(customerId: String): Result<Conversation> =
+            withContext(ioDispatcher) {
+                runCatching { api.createConversation(ConversationRequestDto(customerId)).toDomain() }
             }
     }

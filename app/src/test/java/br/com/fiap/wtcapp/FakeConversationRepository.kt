@@ -8,9 +8,29 @@ class FakeConversationRepository(
 ) : ConversationRepository {
     var lastCustomerId: String? = null
         private set
+    var startCount = 0
+        private set
+    var lastStartedCustomerId: String? = null
+        private set
+
+    private var startResult: Result<Conversation>? = null
+
+    fun setResult(result: Result<List<Conversation>>) {
+        this.result = result
+    }
+
+    fun setStartResult(result: Result<Conversation>) {
+        this.startResult = result
+    }
 
     override suspend fun conversations(customerId: String): Result<List<Conversation>> {
         lastCustomerId = customerId
         return result
+    }
+
+    override suspend fun startConversation(customerId: String): Result<Conversation> {
+        startCount++
+        lastStartedCustomerId = customerId
+        return startResult ?: Result.success(Conversation("new-conv", customerId, "op", "OPEN"))
     }
 }

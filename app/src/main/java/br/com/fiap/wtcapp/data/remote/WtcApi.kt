@@ -3,6 +3,7 @@ package br.com.fiap.wtcapp.data.remote
 import br.com.fiap.wtcapp.data.remote.dto.CampaignRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.ChatMessageRequestDto
+import br.com.fiap.wtcapp.data.remote.dto.ConversationRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.ConversationResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.CustomerRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CustomerResponseDto
@@ -64,6 +65,11 @@ interface WtcApi {
     suspend fun listConversations(
         @Path("customerId") customerId: String,
     ): List<ConversationResponseDto>
+
+    @POST("api/v1/conversations")
+    suspend fun createConversation(
+        @Body request: ConversationRequestDto,
+    ): ConversationResponseDto
 
     @GET("api/v1/messages/conversation/{conversationId}")
     suspend fun listMessages(

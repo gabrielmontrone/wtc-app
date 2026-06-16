@@ -11,6 +11,11 @@ data class ConversationResponseDto(
     val status: String = "",
 )
 
+@Serializable
+data class ConversationRequestDto(
+    val customerId: String,
+)
+
 fun ConversationResponseDto.toDomain(): Conversation =
     Conversation(
         id = id,
