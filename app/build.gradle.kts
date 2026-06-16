@@ -99,6 +99,11 @@ dependencies {
 
     // Image loading (remote photos in the chat)
     implementation(libs.coil.compose)
+
+    // Google Sign-In (Credential Manager)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }
 
 // Static analysis ---------------------------------------------------------------

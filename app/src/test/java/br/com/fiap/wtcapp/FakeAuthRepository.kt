@@ -20,6 +20,10 @@ class FakeAuthRepository(
         private set
     var lastRegisterRole: String? = null
         private set
+    var googleCallCount = 0
+        private set
+    var lastGoogleIdToken: String? = null
+        private set
 
     private var storedToken: String? = null
 
@@ -50,6 +54,12 @@ class FakeAuthRepository(
         lastRegisterEmail = email
         lastRegisterRole = role
         return registerResult
+    }
+
+    override suspend fun loginWithGoogle(idToken: String): Result<Session> {
+        googleCallCount++
+        lastGoogleIdToken = idToken
+        return result.onSuccess { storedToken = it.token }
     }
 
     override fun currentToken(): String? = storedToken

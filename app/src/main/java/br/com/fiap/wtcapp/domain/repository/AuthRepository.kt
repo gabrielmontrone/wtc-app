@@ -18,6 +18,9 @@ interface AuthRepository {
         role: String,
     ): Result<Unit>
 
+    /** Exchanges a Google ID token for an app session (creates the account on first sign-in). */
+    suspend fun loginWithGoogle(idToken: String): Result<Session>
+
     fun currentToken(): String?
 
     fun logout()

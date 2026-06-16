@@ -7,6 +7,7 @@ import br.com.fiap.wtcapp.data.remote.dto.ConversationRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.ConversationResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.CustomerRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CustomerResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.GoogleLoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.MessageResponseDto
@@ -43,6 +44,11 @@ interface WtcApi {
     suspend fun register(
         @Body request: RegisterRequestDto,
     ): RegisterResponseDto
+
+    @POST("api/v1/auth/google")
+    suspend fun loginWithGoogle(
+        @Body request: GoogleLoginRequestDto,
+    ): LoginResponseDto
 
     @GET("customers")
     suspend fun listCustomers(

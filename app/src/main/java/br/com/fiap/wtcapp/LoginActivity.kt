@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,21 +26,30 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.fiap.wtcapp.ui.login.LoginUiState
 import br.com.fiap.wtcapp.ui.login.LoginViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : ComponentActivity() {
@@ -75,6 +85,8 @@ fun LoginRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val webClientId = stringResource(R.string.google_web_client_id)
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) onLoginSuccess()
@@ -86,6 +98,34 @@ fun LoginRoute(
         }
     }
 
+    val onGoogleSignIn: () -> Unit = {
+        if (webClientId.isBlank()) {
+            viewModel.onGoogleSignInError("Google Sign-In não configurado (defina google_web_client_id).")
+        } else {
+            scope.launch {
+                try {
+                    val googleOption =
+                        GetGoogleIdOption.Builder()
+                            .setFilterByAuthorizedAccounts(false)
+                            .setServerClientId(webClientId)
+                            .build()
+                    val request = GetCredentialRequest.Builder().addCredentialOption(googleOption).build()
+                    val result = CredentialManager.create(context).getCredential(context, request)
+                    val credential = result.credential
+                    if (credential is CustomCredential &&
+                        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                    ) {
+                        viewModel.onGoogleSignIn(GoogleIdTokenCredential.createFrom(credential.data).idToken)
+                    } else {
+                        viewModel.onGoogleSignInError("Credencial do Google inesperada.")
+                    }
+                } catch (e: GetCredentialException) {
+                    viewModel.onGoogleSignInError(e.message ?: "Falha ao entrar com Google")
+                }
+            }
+        }
+    }
+
     LoginScreen(
         state = uiState,
         onEmailChange = viewModel::onEmailChange,
@@ -93,6 +133,7 @@ fun LoginRoute(
         onProfileChange = viewModel::onProfileChange,
         onSubmit = viewModel::login,
         onCreateAccount = onCreateAccount,
+        onGoogleSignIn = onGoogleSignIn,
     )
 }
 
@@ -105,6 +146,7 @@ fun LoginScreen(
     onProfileChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
     onCreateAccount: () -> Unit,
+    onGoogleSignIn: () -> Unit,
 ) {
     Column(
         modifier =
@@ -202,6 +244,20 @@ fun LoginScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onGoogleSignIn,
+            enabled = !state.isLoading,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Text("Continuar com Google", fontWeight = FontWeight.Bold)
+        }
+
         TextButton(onClick = onCreateAccount) {
             Text("Não tem conta? Criar conta", color = MaterialTheme.colorScheme.onBackground)
         }
@@ -219,6 +275,7 @@ private fun LoginScreenPreviewLight() {
             onProfileChange = {},
             onSubmit = {},
             onCreateAccount = {},
+            onGoogleSignIn = {},
         )
     }
 }
@@ -234,6 +291,7 @@ private fun LoginScreenPreviewDark() {
             onProfileChange = {},
             onSubmit = {},
             onCreateAccount = {},
+            onGoogleSignIn = {},
         )
     }
 }

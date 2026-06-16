@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp.data.repository
 
 import br.com.fiap.wtcapp.data.local.SessionStorage
 import br.com.fiap.wtcapp.data.remote.WtcApi
+import br.com.fiap.wtcapp.data.remote.dto.GoogleLoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.LoginRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.RegisterRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
@@ -43,6 +44,12 @@ class AuthRepositoryImpl
                         }
                         throw throwable
                     }
+            }
+
+        override suspend fun loginWithGoogle(idToken: String): Result<Session> =
+            withContext(ioDispatcher) {
+                runCatching { api.loginWithGoogle(GoogleLoginRequestDto(idToken)).toDomain() }
+                    .onSuccess { session -> sessionStorage.save(session.token, session.role) }
             }
 
         override fun currentToken(): String? = sessionStorage.token()
