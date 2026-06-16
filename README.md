@@ -79,12 +79,24 @@ em execução.
    object ApiConfig {
        // Backend local visto pelo emulador:
        const val BASE_URL = "http://10.0.2.2:8080/"
-       // Ambiente publicado:
-       // const val BASE_URL = "https://<host>/"
+       // Backend local a partir de um dispositivo físico (mesma rede Wi-Fi):
+       // const val BASE_URL = "http://<IP-da-máquina>:8080/"
+       // Ambiente publicado (demo na Render):
+       // const val BASE_URL = "https://wtc-ioxk.onrender.com/"
    }
    ```
    > No **emulador** Android, `10.0.2.2` aponta para o `localhost` da máquina host.
-   > Em um **dispositivo físico**, use o IP da rede local ou a URL HTTPS do ambiente.
+   > Em um **dispositivo físico**, use o IP da máquina na rede local (ex.: `192.168.x.x`) —
+   > e inclua esse IP em
+   > [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml),
+   > já que tráfego HTTP em texto puro só é permitido para os hosts de desenvolvimento listados.
+
+   > ⏱️ **Sobre o ambiente publicado:** a demo `https://wtc-ioxk.onrender.com` roda no
+   > **plano gratuito da Render**, que hiberna após ~15 min ociosos — a primeira requisição
+   > após o período ocioso pode levar **~30–60s** para "acordar" o servidor (as seguintes são
+   > rápidas). **Para desenvolvimento, recomenda-se rodar o backend localmente** (instantâneo
+   > e offline). Consulte o [README do backend](https://github.com/gabrielmontrone/wtc) para
+   > subir a API e exemplos de uso (`curl`/Swagger).
 3. Adicione o `google-services.json` do projeto Firebase em `app/`.
 4. Execute o app (▶) no emulador/dispositivo.
 
