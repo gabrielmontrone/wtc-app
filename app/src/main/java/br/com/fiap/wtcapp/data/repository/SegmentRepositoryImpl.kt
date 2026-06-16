@@ -1,6 +1,7 @@
 package br.com.fiap.wtcapp.data.repository
 
 import br.com.fiap.wtcapp.data.remote.WtcApi
+import br.com.fiap.wtcapp.data.remote.dto.SegmentRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.Segment
@@ -18,5 +19,26 @@ class SegmentRepositoryImpl
         override suspend fun segments(): Result<List<Segment>> =
             withContext(ioDispatcher) {
                 runCatching { api.listSegments().map { it.toDomain() } }
+            }
+
+        override suspend fun createSegment(
+            name: String,
+            vip: Boolean,
+            active: Boolean,
+            minScore: Int?,
+            minLoyalty: Int?,
+        ): Result<Segment> =
+            withContext(ioDispatcher) {
+                runCatching {
+                    api.createSegment(
+                        SegmentRequestDto(
+                            name = name,
+                            vip = vip,
+                            active = active,
+                            minScore = minScore,
+                            minLoyalty = minLoyalty,
+                        ),
+                    ).toDomain()
+                }
             }
     }

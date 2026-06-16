@@ -13,6 +13,7 @@ import br.com.fiap.wtcapp.data.remote.dto.MessageResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.PageDto
 import br.com.fiap.wtcapp.data.remote.dto.RegisterRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.RegisterResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.SegmentRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.SegmentResponseDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -52,6 +53,11 @@ interface WtcApi {
 
     @GET("api/v1/segments")
     suspend fun listSegments(): List<SegmentResponseDto>
+
+    @POST("api/v1/segments")
+    suspend fun createSegment(
+        @Body request: SegmentRequestDto,
+    ): SegmentResponseDto
 
     @GET("api/v1/campaigns")
     suspend fun listCampaigns(): List<CampaignResponseDto>

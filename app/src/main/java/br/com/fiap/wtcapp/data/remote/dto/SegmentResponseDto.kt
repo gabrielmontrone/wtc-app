@@ -13,6 +13,15 @@ data class SegmentResponseDto(
     val minLoyalty: Int? = null,
 )
 
+@Serializable
+data class SegmentRequestDto(
+    val name: String,
+    val vip: Boolean,
+    val active: Boolean,
+    val minScore: Int? = null,
+    val minLoyalty: Int? = null,
+)
+
 fun SegmentResponseDto.toDomain(): Segment =
     Segment(
         id = id,

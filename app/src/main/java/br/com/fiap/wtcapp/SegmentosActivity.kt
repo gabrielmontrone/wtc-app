@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,18 +15,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.fiap.wtcapp.domain.model.Segment
 import br.com.fiap.wtcapp.ui.common.LaunchedErrorToast
+import br.com.fiap.wtcapp.ui.segmentos.AddSegmentForm
 import br.com.fiap.wtcapp.ui.segmentos.SegmentosUiState
 import br.com.fiap.wtcapp.ui.segmentos.SegmentosViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
@@ -62,56 +75,162 @@ fun SegmentosRoute(viewModel: SegmentosViewModel = hiltViewModel()) {
     SegmentosScreen(
         state = uiState,
         onSearchChange = viewModel::onSearchChange,
+        onAddSegmentClick = viewModel::onAddSegmentClick,
     )
+
+    uiState.addForm?.let { form ->
+        AddSegmentDialog(
+            form = form,
+            onNameChange = viewModel::onFormNameChange,
+            onVipChange = viewModel::onFormVipChange,
+            onActiveChange = viewModel::onFormActiveChange,
+            onMinScoreChange = viewModel::onFormMinScoreChange,
+            onMinLoyaltyChange = viewModel::onFormMinLoyaltyChange,
+            onSave = viewModel::saveSegment,
+            onDismiss = viewModel::onAddSegmentDismiss,
+        )
+    }
 }
 
 @Composable
 fun SegmentosScreen(
     state: SegmentosUiState,
     onSearchChange: (String) -> Unit,
+    onAddSegmentClick: () -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
-    ) {
-        Text(
-            text = "Segmentos",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddSegmentClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Novo segmento")
+            }
+        },
+    ) { innerPadding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(24.dp),
+        ) {
+            Text(
+                text = "Segmentos",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
 
-        OutlinedTextField(
-            value = state.search,
-            onValueChange = onSearchChange,
-            label = { Text("Buscar segmento") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-        )
+            OutlinedTextField(
+                value = state.search,
+                onValueChange = onSearchChange,
+                label = { Text("Buscar segmento") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        when {
-            state.isLoading ->
-                Centered { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
-            state.visibleSegments.isEmpty() ->
-                Centered {
-                    Text("Nenhum segmento encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            else ->
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(state.visibleSegments, key = { it.id }) { segment ->
-                        SegmentoCard(segment)
+            when {
+                state.isLoading ->
+                    Centered { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
+                state.visibleSegments.isEmpty() ->
+                    Centered {
+                        Text("Nenhum segmento encontrado", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
+                else ->
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(state.visibleSegments, key = { it.id }) { segment ->
+                            SegmentoCard(segment)
+                        }
+                    }
+            }
         }
+    }
+}
+
+@Composable
+fun AddSegmentDialog(
+    form: AddSegmentForm,
+    onNameChange: (String) -> Unit,
+    onVipChange: (Boolean) -> Unit,
+    onActiveChange: (Boolean) -> Unit,
+    onMinScoreChange: (String) -> Unit,
+    onMinLoyaltyChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { if (!form.isSaving) onDismiss() },
+        title = { Text("Novo segmento") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = form.name,
+                    onValueChange = onNameChange,
+                    label = { Text("Nome") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                OutlinedTextField(
+                    value = form.minScore,
+                    onValueChange = onMinScoreChange,
+                    label = { Text("Score mínimo (opcional)") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                OutlinedTextField(
+                    value = form.minLoyalty,
+                    onValueChange = onMinLoyaltyChange,
+                    label = { Text("Fidelidade mínima (opcional)") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                SegmentSwitchRow("VIP", form.vip, !form.isSaving, onVipChange)
+                SegmentSwitchRow("Ativo", form.active, !form.isSaving, onActiveChange)
+            }
+        },
+        confirmButton = {
+            Button(onClick = onSave, enabled = !form.isSaving) {
+                Text(if (form.isSaving) "Salvando..." else "Salvar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !form.isSaving) { Text("Cancelar") }
+        },
+    )
+}
+
+@Composable
+private fun SegmentSwitchRow(
+    label: String,
+    checked: Boolean,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = MaterialTheme.colorScheme.onSurface)
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 
@@ -168,6 +287,7 @@ private fun SegmentosScreenPreview() {
                             ),
                     ),
                 onSearchChange = {},
+                onAddSegmentClick = {},
             )
         }
     }
