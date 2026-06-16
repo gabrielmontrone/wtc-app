@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -110,6 +112,8 @@ fun MensagensRoute(viewModel: MensagensViewModel = hiltViewModel()) {
         state = uiState,
         onReplyChange = viewModel::onReplyChange,
         onSend = viewModel::send,
+        onConfirmSend = viewModel::confirmSend,
+        onDismissRiskWarning = viewModel::dismissRiskWarning,
         onCampaignSelected = viewModel::onCampaignSelected,
         onRemovePendingPhoto = viewModel::onRemovePendingPhoto,
         onPickPhoto = {
@@ -125,10 +129,16 @@ fun MensagensScreen(
     state: MensagensUiState,
     onReplyChange: (String) -> Unit,
     onSend: () -> Unit,
+    onConfirmSend: () -> Unit,
+    onDismissRiskWarning: () -> Unit,
     onCampaignSelected: (Campaign) -> Unit,
     onRemovePendingPhoto: () -> Unit,
     onPickPhoto: () -> Unit,
 ) {
+    state.riskWarning?.let { flags ->
+        RiskWarningDialog(flags = flags, onConfirm = onConfirmSend, onDismiss = onDismissRiskWarning)
+    }
+
     Column(
         modifier =
             Modifier
@@ -295,6 +305,60 @@ private fun PendingPhotoPreview(
     }
 }
 
+private fun riskFlagLabel(code: String): String =
+    when (code) {
+        "CPF" -> "CPF"
+        "CNPJ" -> "CNPJ"
+        "CARD" -> "Cartão de crédito"
+        "SUSPICIOUS_LINK" -> "Link suspeito"
+        else -> code
+    }
+
+@Composable
+private fun RiskWarningDialog(
+    flags: List<String>,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Dados sensíveis detectados") },
+        text = {
+            Column {
+                Text("Esta mensagem parece conter:")
+                flags.forEach { Text("• ${riskFlagLabel(it)}") }
+                Spacer(modifier = Modifier.padding(top = 4.dp))
+                Text("Deseja enviar mesmo assim?")
+            }
+        },
+        confirmButton = { TextButton(onClick = onConfirm) { Text("Enviar mesmo assim") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
+}
+
+@Composable
+private fun RiskBadges(
+    level: String,
+    flags: List<String>,
+) {
+    val color = if (level == "HIGH") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary
+    Row(
+        modifier = Modifier.padding(top = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        flags.forEach { code ->
+            Surface(color = color.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
+                Text(
+                    "⚠ ${riskFlagLabel(code)}",
+                    color = color,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun MensagemCard(message: ChatMessage) {
     Card(
@@ -328,6 +392,9 @@ fun MensagemCard(message: ChatMessage) {
             message.content.takeIf { it.isNotBlank() }?.let {
                 Text(it, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
             }
+            if ((message.riskLevel == "MEDIUM" || message.riskLevel == "HIGH") && message.riskFlags.isNotEmpty()) {
+                RiskBadges(message.riskLevel, message.riskFlags)
+            }
             message.senderRole?.let {
                 Text("De: $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -347,10 +414,21 @@ private fun MensagensScreenPreview() {
                             listOf(
                                 ChatMessage("1", "Promoção", "Aproveite 30% de desconto!", "SENT", "OPERATOR"),
                                 ChatMessage("2", null, "Obrigado!", "SENT", "CUSTOMER"),
+                                ChatMessage(
+                                    id = "3",
+                                    subject = null,
+                                    content = "meu cartão é 4111 1111 1111 1111",
+                                    status = "SENT",
+                                    senderRole = "CUSTOMER",
+                                    riskLevel = "HIGH",
+                                    riskFlags = listOf("CARD"),
+                                ),
                             ),
                     ),
                 onReplyChange = {},
                 onSend = {},
+                onConfirmSend = {},
+                onDismissRiskWarning = {},
                 onCampaignSelected = {},
                 onRemovePendingPhoto = {},
                 onPickPhoto = {},

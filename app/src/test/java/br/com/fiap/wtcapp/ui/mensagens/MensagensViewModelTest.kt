@@ -6,6 +6,7 @@ import br.com.fiap.wtcapp.FakeCampaignRepository
 import br.com.fiap.wtcapp.FakeMessageRepository
 import br.com.fiap.wtcapp.MainDispatcherRule
 import br.com.fiap.wtcapp.MensagensActivity
+import br.com.fiap.wtcapp.domain.compliance.MessageRiskAnalyzer
 import br.com.fiap.wtcapp.domain.model.Campaign
 import br.com.fiap.wtcapp.domain.model.ChatMessage
 import br.com.fiap.wtcapp.domain.usecase.GetCampaignsUseCase
@@ -36,6 +37,7 @@ class MensagensViewModelTest {
         SendReplyUseCase(messageRepository),
         GetCampaignsUseCase(campaignRepository),
         UploadPhotoUseCase(attachmentRepository),
+        MessageRiskAnalyzer(),
         handle(),
     )
 
@@ -77,6 +79,36 @@ class MensagensViewModelTest {
             viewModel.send()
 
             assertEquals(null, repository.lastSentContent)
+        }
+
+    @Test
+    fun `sensitive message warns before sending instead of sending`() =
+        runTest {
+            val repository = FakeMessageRepository()
+            val viewModel = viewModel(messageRepository = repository)
+            viewModel.onReplyChange("meu CPF é 529.982.247-25")
+
+            viewModel.send()
+
+            val state = viewModel.uiState.value
+            assertEquals(listOf("CPF"), state.riskWarning)
+            assertEquals(null, repository.lastSentContent)
+        }
+
+    @Test
+    fun `confirming the warning sends the flagged message`() =
+        runTest {
+            val repository = FakeMessageRepository()
+            val viewModel = viewModel(messageRepository = repository)
+            viewModel.onReplyChange("meu CPF é 529.982.247-25")
+            viewModel.send()
+
+            viewModel.confirmSend()
+
+            val state = viewModel.uiState.value
+            assertEquals(null, state.riskWarning)
+            assertEquals("meu CPF é 529.982.247-25", repository.lastSentContent)
+            assertEquals("", state.reply)
         }
 
     @Test

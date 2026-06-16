@@ -12,6 +12,8 @@ data class MensagensUiState(
     val campaigns: List<Campaign> = emptyList(),
     val isUploading: Boolean = false,
     val pendingImageUrl: String? = null,
+    /** Non-null when the reply tripped the DLP scan and awaits operator confirmation. */
+    val riskWarning: List<String>? = null,
 ) {
     val canSend: Boolean
         get() = !isSending && !isUploading && (reply.isNotBlank() || pendingImageUrl != null)

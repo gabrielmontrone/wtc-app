@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.fiap.wtcapp.MensagensActivity
+import br.com.fiap.wtcapp.domain.compliance.MessageRiskAnalyzer
 import br.com.fiap.wtcapp.domain.model.Campaign
 import br.com.fiap.wtcapp.domain.usecase.GetCampaignsUseCase
 import br.com.fiap.wtcapp.domain.usecase.GetMessagesUseCase
@@ -25,6 +26,7 @@ class MensagensViewModel
         private val sendReply: SendReplyUseCase,
         private val getCampaigns: GetCampaignsUseCase,
         private val uploadPhoto: UploadPhotoUseCase,
+        private val riskAnalyzer: MessageRiskAnalyzer,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val conversationId: String = savedStateHandle[MensagensActivity.EXTRA_CONVERSATION_ID] ?: ""
@@ -91,6 +93,26 @@ class MensagensViewModel
         fun onRemovePendingPhoto() = _uiState.update { it.copy(pendingImageUrl = null) }
 
         fun send() {
+            val current = _uiState.value
+            if (!current.canSend) return
+            // DLP: warn before sending if the reply contains sensitive data / risky links.
+            val analysis = riskAnalyzer.analyze(current.reply)
+            if (analysis.level.isSuspicious()) {
+                _uiState.update { it.copy(riskWarning = analysis.flags) }
+                return
+            }
+            performSend()
+        }
+
+        /** Sends anyway after the operator acknowledges the DLP warning. */
+        fun confirmSend() {
+            _uiState.update { it.copy(riskWarning = null) }
+            performSend()
+        }
+
+        fun dismissRiskWarning() = _uiState.update { it.copy(riskWarning = null) }
+
+        private fun performSend() {
             val current = _uiState.value
             if (!current.canSend) return
             _uiState.update { it.copy(isSending = true, errorMessage = null) }

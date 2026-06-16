@@ -11,6 +11,8 @@ data class MessageResponseDto(
     val status: String? = null,
     val senderRole: String? = null,
     val imageUrl: String? = null,
+    val riskLevel: String? = null,
+    val riskFlags: List<String> = emptyList(),
 )
 
 @Serializable
@@ -27,4 +29,6 @@ fun MessageResponseDto.toDomain(): ChatMessage =
         status = status,
         senderRole = senderRole,
         imageUrl = imageUrl,
+        riskLevel = riskLevel,
+        riskFlags = riskFlags,
     )
