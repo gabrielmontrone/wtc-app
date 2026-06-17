@@ -69,6 +69,14 @@ class HomeActivity : ComponentActivity() {
                         onOpenSegmentos = { open(SegmentosActivity::class.java) },
                         onOpenAuditoria = { open(AuditoriaActivity::class.java) },
                         onOpenMinhaConversa = { openMinhaConversa(homeViewModel.conversationId) },
+                        onLogout = {
+                            homeViewModel.logout()
+                            startActivity(
+                                Intent(this, LoginActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                            )
+                            finish()
+                        },
                         themeMode = themeMode,
                         onThemeModeChange = themeViewModel::setThemeMode,
                     )
@@ -101,6 +109,7 @@ fun HomeScreen(
     onOpenSegmentos: () -> Unit,
     onOpenAuditoria: () -> Unit,
     onOpenMinhaConversa: () -> Unit,
+    onLogout: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
 ) {
@@ -130,12 +139,17 @@ fun HomeScreen(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
-                IconButton(onClick = { showThemeDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Tema",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onLogout) {
+                        Text("Sair", color = MaterialTheme.colorScheme.onBackground)
+                    }
+                    IconButton(onClick = { showThemeDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Tema",
+                            tint = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
                 }
             }
 
@@ -306,6 +320,7 @@ private fun HomeScreenPreview() {
             onOpenSegmentos = {},
             onOpenAuditoria = {},
             onOpenMinhaConversa = {},
+            onLogout = {},
             themeMode = ThemeMode.SYSTEM,
             onThemeModeChange = {},
         )

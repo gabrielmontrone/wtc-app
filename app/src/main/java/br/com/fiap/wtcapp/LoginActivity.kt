@@ -69,7 +69,11 @@ class LoginActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     LoginRoute(
                         onLoginSuccess = {
-                            startActivity(Intent(this, HomeActivity::class.java))
+                            // Clear the back stack so "back" can't return to Welcome/Login after entering.
+                            startActivity(
+                                Intent(this, HomeActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                            )
                             finish()
                         },
                         onCreateAccount = {

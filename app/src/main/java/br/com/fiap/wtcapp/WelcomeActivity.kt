@@ -125,13 +125,6 @@ fun WelcomeScreen() {
             TextButton(onClick = { }) {
                 Text("Acesse como cliente ou operador", color = MaterialTheme.colorScheme.onBackground)
             }
-
-            Text(
-                text = "© 2025 WTC. Todos os direitos reservados.",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
         }
     }
 }

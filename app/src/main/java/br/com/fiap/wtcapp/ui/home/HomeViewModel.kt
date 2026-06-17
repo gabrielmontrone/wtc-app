@@ -14,8 +14,11 @@ import javax.inject.Inject
 class HomeViewModel
     @Inject
     constructor(
-        authRepository: AuthRepository,
+        private val authRepository: AuthRepository,
     ) : ViewModel() {
         val isOperator: Boolean = authRepository.currentRole().equals("OPERADOR", ignoreCase = true)
         val conversationId: String? = authRepository.currentUserId()
+
+        /** Clears the stored session so the user returns to the login flow. */
+        fun logout() = authRepository.logout()
     }

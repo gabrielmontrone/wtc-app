@@ -28,4 +28,13 @@ class HomeViewModelTest {
 
         assertFalse(viewModel.isOperator)
     }
+
+    @Test
+    fun `logout clears the session`() {
+        val repository = FakeAuthRepository(roleValue = "OPERADOR", userIdValue = "op1")
+
+        HomeViewModel(repository).logout()
+
+        assertEquals(1, repository.logoutCallCount)
+    }
 }

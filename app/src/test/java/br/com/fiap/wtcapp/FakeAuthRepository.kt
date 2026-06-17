@@ -26,6 +26,8 @@ class FakeAuthRepository(
         private set
     var lastGoogleIdToken: String? = null
         private set
+    var logoutCallCount = 0
+        private set
 
     private var storedToken: String? = null
 
@@ -71,6 +73,7 @@ class FakeAuthRepository(
     override fun currentUserId(): String? = userIdValue
 
     override fun logout() {
+        logoutCallCount++
         storedToken = null
     }
 }
