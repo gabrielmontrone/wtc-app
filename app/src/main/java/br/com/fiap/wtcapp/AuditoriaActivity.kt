@@ -76,6 +76,23 @@ private val MessageColor = Color(0xFF4C8DFF)
 private val NewUserColor = Color(0xFF8E4EC6)
 private val NewCustomerColor = Color(0xFF12A594)
 private val DefaultActionColor = Color(0xFF8B8D98)
+private val LowRiskColor = Color(0xFFF2C94C)
+
+private fun riskColor(level: String): Color =
+    when (level.uppercase()) {
+        "HIGH" -> SuspiciousColor
+        "MEDIUM" -> FailedLoginColor
+        "LOW" -> LowRiskColor
+        else -> DefaultActionColor
+    }
+
+private fun riskLabel(level: String): String =
+    when (level.uppercase()) {
+        "HIGH" -> "Alto"
+        "MEDIUM" -> "Médio"
+        "LOW" -> "Baixo"
+        else -> level
+    }
 
 private fun actionColor(action: String): Color =
     when (action) {
@@ -154,6 +171,9 @@ fun AuditoriaScreen(state: AuditoriaUiState) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item { KpiGrid(state.summary) }
+                    if (state.summary.riskDistribution.isNotEmpty()) {
+                        item { RiskCard(state.summary) }
+                    }
                     item { ByTypeCard(state.summary) }
                     if (state.summary.topUsers.isNotEmpty()) {
                         item { TopUsersCard(state.summary) }
@@ -243,25 +263,48 @@ private fun KpiCard(
 
 @Composable
 private fun ByTypeCard(summary: AuditSummary) {
-    SectionCard(title = "Eventos por tipo", icon = Icons.Filled.BarChart) {
-        val maxCount = summary.countsByAction.maxOfOrNull { it.second } ?: 1
-        summary.countsByAction.forEach { (action, count) ->
+    BarBreakdownCard(
+        title = "Eventos por tipo",
+        icon = Icons.Filled.BarChart,
+        items = summary.countsByAction,
+        labelFor = ::actionLabel,
+        colorFor = ::actionColor,
+    )
+}
+
+@Composable
+private fun RiskCard(summary: AuditSummary) {
+    BarBreakdownCard(
+        title = "Distribuição de risco (mensagens suspeitas)",
+        icon = Icons.Filled.Warning,
+        items = summary.riskDistribution,
+        labelFor = ::riskLabel,
+        colorFor = ::riskColor,
+    )
+}
+
+@Composable
+private fun BarBreakdownCard(
+    title: String,
+    icon: ImageVector,
+    items: List<Pair<String, Int>>,
+    labelFor: (String) -> String,
+    colorFor: (String) -> Color,
+) {
+    SectionCard(title = title, icon = icon) {
+        val maxCount = items.maxOfOrNull { it.second } ?: 1
+        items.forEach { (key, count) ->
             val fraction = (count.toFloat() / maxCount).coerceIn(0.06f, 1f)
-            val color = actionColor(action)
+            val color = colorFor(key)
             Column(modifier = Modifier.padding(top = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        actionLabel(action),
+                        labelFor(key),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f),
                     )
-                    Text(
-                        count.toString(),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = color,
-                    )
+                    Text(count.toString(), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)
                 }
                 Spacer(Modifier.height(6.dp))
                 Box(
@@ -424,9 +467,10 @@ private fun AuditoriaScreenPreview() {
             AuditEvent("4", "LOGIN_SUCCESS", "joao@wtc.com", "Autenticado via JWT", "2026-06-16T11:40:00Z"),
             AuditEvent("5", "SEND_MESSAGE", "ana@wtc.com", "Mensagem enviada na conversa: 4", "2026-06-16T11:30:00Z"),
         )
+    val summary = AuditSummary.from(events).copy(riskDistribution = listOf("HIGH" to 2, "MEDIUM" to 1))
     WTCTheme(darkTheme = true) {
         Surface {
-            AuditoriaScreen(state = AuditoriaUiState(events = events, summary = AuditSummary.from(events)))
+            AuditoriaScreen(state = AuditoriaUiState(events = events, summary = summary))
         }
     }
 }

@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp.data.remote
 
 import br.com.fiap.wtcapp.data.remote.dto.AttachmentUploadResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.AuditResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.AuditSummaryDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.CampaignResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.ChatMessageRequestDto
@@ -102,6 +103,9 @@ interface WtcApi {
 
     @GET("api/v1/audit")
     suspend fun listAuditEvents(): List<AuditResponseDto>
+
+    @GET("api/v1/audit/summary")
+    suspend fun getAuditSummary(): AuditSummaryDto
 
     /**
      * Uploads a photo as multipart to the backend, which stores it and returns the URL

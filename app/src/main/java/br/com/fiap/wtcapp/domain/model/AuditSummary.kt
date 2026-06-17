@@ -17,6 +17,8 @@ data class AuditSummary(
     val countsByAction: List<Pair<String, Int>> = emptyList(),
     /** Top actors by event count (email -> count), at most five. */
     val topUsers: List<Pair<String, Int>> = emptyList(),
+    /** Suspicious messages by risk level (e.g. HIGH/MEDIUM/LOW -> count). Server-provided only. */
+    val riskDistribution: List<Pair<String, Int>> = emptyList(),
 ) {
     companion object {
         private const val ACTION_SUSPICIOUS = "SUSPICIOUS_MESSAGE"

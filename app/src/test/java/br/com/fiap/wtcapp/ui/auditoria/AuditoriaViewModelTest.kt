@@ -4,6 +4,7 @@ import br.com.fiap.wtcapp.FakeAuditRepository
 import br.com.fiap.wtcapp.MainDispatcherRule
 import br.com.fiap.wtcapp.domain.model.AuditEvent
 import br.com.fiap.wtcapp.domain.usecase.GetAuditEventsUseCase
+import br.com.fiap.wtcapp.domain.usecase.GetAuditSummaryUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -16,7 +17,8 @@ class AuditoriaViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private fun viewModel(repository: FakeAuditRepository) = AuditoriaViewModel(GetAuditEventsUseCase(repository))
+    private fun viewModel(repository: FakeAuditRepository) =
+        AuditoriaViewModel(GetAuditEventsUseCase(repository), GetAuditSummaryUseCase(repository))
 
     @Test
     fun `loads audit events on init`() =

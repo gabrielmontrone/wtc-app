@@ -4,6 +4,7 @@ import br.com.fiap.wtcapp.data.remote.WtcApi
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.AuditEvent
+import br.com.fiap.wtcapp.domain.model.AuditSummary
 import br.com.fiap.wtcapp.domain.repository.AuditRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -18,5 +19,10 @@ class AuditRepositoryImpl
         override suspend fun events(): Result<List<AuditEvent>> =
             withContext(ioDispatcher) {
                 runCatching { api.listAuditEvents().map { it.toDomain() } }
+            }
+
+        override suspend fun summary(): Result<AuditSummary> =
+            withContext(ioDispatcher) {
+                runCatching { api.getAuditSummary().toDomain() }
             }
     }
