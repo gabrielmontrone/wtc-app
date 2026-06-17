@@ -33,4 +33,12 @@ class FakeConversationRepository(
         lastStartedCustomerId = customerId
         return startResult ?: Result.success(Conversation("new-conv", customerId, "op", "OPEN"))
     }
+
+    var lastClientEmail: String? = null
+        private set
+
+    override suspend fun startConversationWithClient(email: String): Result<Conversation> {
+        lastClientEmail = email
+        return startResult ?: Result.success(Conversation("client-conv", "client-id", "op", "OPEN"))
+    }
 }

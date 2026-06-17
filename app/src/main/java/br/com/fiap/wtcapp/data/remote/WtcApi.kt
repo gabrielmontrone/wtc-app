@@ -19,6 +19,7 @@ import br.com.fiap.wtcapp.data.remote.dto.RegisterRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.RegisterResponseDto
 import br.com.fiap.wtcapp.data.remote.dto.SegmentRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.SegmentResponseDto
+import br.com.fiap.wtcapp.data.remote.dto.StartClientConversationRequestDto
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -88,6 +89,11 @@ interface WtcApi {
     @POST("api/v1/conversations")
     suspend fun createConversation(
         @Body request: ConversationRequestDto,
+    ): ConversationResponseDto
+
+    @POST("api/v1/conversations/with-client")
+    suspend fun startConversationWithClient(
+        @Body request: StartClientConversationRequestDto,
     ): ConversationResponseDto
 
     @GET("api/v1/messages/conversation/{conversationId}")

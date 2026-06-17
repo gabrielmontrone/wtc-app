@@ -55,6 +55,7 @@ import br.com.fiap.wtcapp.ui.contatos.AddContactForm
 import br.com.fiap.wtcapp.ui.contatos.ContatoFiltro
 import br.com.fiap.wtcapp.ui.contatos.ContatosUiState
 import br.com.fiap.wtcapp.ui.contatos.ContatosViewModel
+import br.com.fiap.wtcapp.ui.conversas.StartClientConversationButton
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,6 +74,12 @@ class ContatosActivity : ComponentActivity() {
                                     .putExtra(ConversasActivity.EXTRA_CUSTOMER_ID, customerId),
                             )
                         },
+                        onOpenConversation = { conversationId ->
+                            startActivity(
+                                Intent(this, MensagensActivity::class.java)
+                                    .putExtra(MensagensActivity.EXTRA_CONVERSATION_ID, conversationId),
+                            )
+                        },
                     )
                 }
             }
@@ -83,6 +90,7 @@ class ContatosActivity : ComponentActivity() {
 @Composable
 fun ContatosRoute(
     onContactClick: (String) -> Unit,
+    onOpenConversation: (String) -> Unit,
     viewModel: ContatosViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -95,6 +103,7 @@ fun ContatosRoute(
         onFilterChange = viewModel::onFilterChange,
         onContactClick = onContactClick,
         onAddContactClick = viewModel::onAddContactClick,
+        headerAction = { StartClientConversationButton(onOpenConversation = onOpenConversation) },
     )
 
     uiState.addForm?.let { form ->
@@ -119,6 +128,7 @@ fun ContatosScreen(
     onFilterChange: (ContatoFiltro) -> Unit,
     onContactClick: (String) -> Unit,
     onAddContactClick: () -> Unit,
+    headerAction: @Composable () -> Unit = {},
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -140,13 +150,19 @@ fun ContatosScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(24.dp),
         ) {
-            Text(
-                text = "Contatos",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Contatos",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                headerAction()
+            }
 
             OutlinedTextField(
                 value = state.search,
