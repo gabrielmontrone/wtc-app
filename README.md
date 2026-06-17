@@ -7,6 +7,10 @@ Kotlin com Jetpack Compose, consumindo a API REST da plataforma.
 É um projeto mobile, então roda em emulador ou dispositivo Android. O backend fica em um
 repositório separado: https://github.com/gabrielmontrone/wtc
 
+Para apenas testar o app, baixe o APK pronto na página de releases
+(https://github.com/gabrielmontrone/wtc-app/releases/latest). Suba o backend antes de abrir o app — o
+passo a passo está em [Build e execução](#build-e-execução).
+
 A mensageria é o produto; em cima dela há controles de proteção de dados, detecção de atividade
 suspeita e auditoria.
 
@@ -103,7 +107,7 @@ app/src/main/java/br/com/fiap/wtcapp/
 ### Rodando com o APK e o backend local
 
 O caminho mais rápido para testar: subir o backend localmente e abrir o app, sem alterar nenhuma
-linha de código.
+linha de código e sem precisar compilar nada. A ordem importa — suba o backend primeiro, depois o app.
 
 1. Suba o backend com Docker (não precisa de configuração). O repositório é
    https://github.com/gabrielmontrone/wtc:
@@ -112,9 +116,11 @@ linha de código.
    cd wtc
    docker compose up --build      # API em http://localhost:8080
    ```
-2. Instale o APK (anexado à release do repositório, ou gere com o comando da seção
-   [Gerando o APK de demonstração](#gerando-o-apk-de-demonstração)). Ele já vem apontando para
-   `http://10.0.2.2:8080/`.
+   Deixe o container rodando — é ele que o app vai consumir.
+2. Com o backend no ar, baixe o APK pronto na página de releases e instale no emulador/celular:
+   https://github.com/gabrielmontrone/wtc-app/releases/latest (arquivo `wtc-demo.apk`). Ele já vem
+   apontando para `http://10.0.2.2:8080/`. Se preferir compilar você mesmo, veja
+   [Gerando o APK de demonstração](#gerando-o-apk-de-demonstração).
 3. Abra o app:
    - No emulador, funciona de imediato, porque `10.0.2.2` é o `localhost` da máquina host visto de
      dentro do emulador.

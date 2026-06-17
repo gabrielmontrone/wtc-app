@@ -5,6 +5,8 @@ funcionalidades. Para a visão de arquitetura e do projeto como um todo, veja o 
 
 ## Pré-requisitos (uma vez)
 
+A ordem importa: suba o backend primeiro e só depois abra o app pelo APK.
+
 1. Backend rodando localmente (instantâneo, sem conta na nuvem). O backend fica em
    https://github.com/gabrielmontrone/wtc:
    ```bash
@@ -12,10 +14,12 @@ funcionalidades. Para a visão de arquitetura e do projeto como um todo, veja o 
    cd wtc
    docker compose up --build     # API em http://localhost:8080
    ```
-   Se preferir não usar Docker, dá para rodar com `./mvnw spring-boot:run` e um arquivo `.env` — as
-   instruções estão no [README do backend](https://github.com/gabrielmontrone/wtc).
-2. App rodando em emulador ou dispositivo:
-   - No emulador, o APK de demonstração já aponta para `http://10.0.2.2:8080/` e funciona de imediato.
+   Deixe o container rodando. Se preferir não usar Docker, dá para rodar com
+   `./mvnw spring-boot:run` e um arquivo `.env` — as instruções estão no
+   [README do backend](https://github.com/gabrielmontrone/wtc).
+2. Com o backend no ar, baixe o APK pronto na página de releases e instale no emulador ou no celular:
+   https://github.com/gabrielmontrone/wtc-app/releases/latest (arquivo `wtc-demo.apk`).
+   - No emulador, o APK já aponta para `http://10.0.2.2:8080/` e funciona de imediato.
    - No celular físico (na mesma Wi-Fi do PC), abra o ícone de engrenagem na tela inicial e troque a
      URL para `http://<IP-do-PC>:8080/`. Não precisa recompilar.
 
