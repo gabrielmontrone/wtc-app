@@ -16,11 +16,23 @@ demais funcionalidades recentes. Para a visão de arquitetura/positioning, veja 
    rodando em emulador/dispositivo.
 3. Faça login — alguns recursos pedem conta **OPERADOR** (campanhas); outros, qualquer conta.
 
+## 👤 Papéis (o menu muda conforme a conta)
+
+- **OPERADOR** — console completo: Contatos (CRM), Campanhas, Segmentos, Auditoria.
+- **CLIENTE** — vê **apenas a própria conversa** ("Minha conversa"); não acessa CRM,
+  campanhas, segmentos nem auditoria (o backend também bloqueia com **403**).
+
+> Os dados são isolados por conta: um operador só enxerga os contatos/conversas que **ele**
+> criou. Para a demo, crie contatos novos com a conta de operador.
+
 ## 🗺️ Mapa de navegação
 
 ```
-Welcome → Login → Home ─┬─ Contatos → (toca um contato) → Conversas → (toca uma conversa) → Mensagens
-                        └─ Auditoria
+OPERADOR: Welcome → Login → Home ─┬─ Contatos → (toca um contato) → Conversas → (toca uma conversa) → Mensagens
+                                  ├─ Campanhas / Segmentos
+                                  └─ Auditoria
+
+CLIENTE:  Welcome → Login → Home → Minha conversa → Mensagens
 ```
 
 ---
@@ -52,8 +64,8 @@ Welcome → Login → Home ─┬─ Contatos → (toca um contato) → Conversa
 - **Selos de risco:** mensagens com dados sensíveis exibem **⚠ CPF / ⚠ Cartão de crédito** no
   balão (vermelho para risco alto).
 
-### 5. Trilha de auditoria — tela Auditoria ⭐
-- **Onde:** Home → card **🛡️ Auditoria**.
+### 5. Trilha de auditoria — tela Auditoria ⭐ (apenas OPERADOR)
+- **Onde:** Home (conta operador) → card **🛡️ Auditoria**.
 - **O que mostra:** eventos recentes (login, envio de mensagem, criação de cliente) e, em destaque
   com ⚠, os **`SUSPICIOUS_MESSAGE`** gerados pelo scan DLP.
 - **Dica:** envie uma mensagem com CPF/cartão (passo 4) e abra **Auditoria** — o evento aparece no topo.

@@ -44,6 +44,10 @@ Camada de controles sobre a mensageria, sem alterar a regra de negócio. Toda me
 - **Auditoria** — ações sensíveis (login, envio de mensagem, criação de cliente) e, em especial,
   **mensagens suspeitas** (`SUSPICIOUS_MESSAGE`) são gravadas em uma trilha imutável, consultável
   na tela **Auditoria** (`GET /api/v1/audit`).
+- **Controle de acesso (RBAC) + isolamento por conta** — papéis distintos: o **OPERADOR** acessa
+  o console completo (CRM, campanhas, segmentos, auditoria); o **CLIENTE** vê apenas a própria
+  conversa. Cada contato/conversa tem dono, e o backend valida participação a cada requisição
+  (`AccessControlService` → **403** em acesso cruzado), evitando vazamento entre contas.
 - **Proteção de dados** — sessão (JWT) em `EncryptedSharedPreferences` (AES-256); TLS obrigatório
   fora do ambiente de desenvolvimento.
 
@@ -54,6 +58,7 @@ Camada de controles sobre a mensageria, sem alterar a regra de negócio. Toda me
 | Scan DLP + selos de risco | Monitoramento e **identificação de atividades suspeitas** |
 | Aviso antes do envio (CPF/CNPJ/cartão) | **Proteção de dados** dos clientes; redução de perdas |
 | Trilha de auditoria (tela Auditoria) | **Auditoria/conformidade**; _accountability_ |
+| RBAC + isolamento por conta (dono + 403) | **Segregação de acesso** (_least privilege_); proteção de dados |
 | JWT criptografado + TLS + `exported=false` | **Segurança** e controles de conformidade |
 | Login com Google (verificação de _ID token_) | Autenticação forte / onboarding |
 
@@ -163,6 +168,8 @@ em execução.
 - **`network-security-config`** permite tráfego em texto puro apenas para o ambiente de
   desenvolvimento (`10.0.2.2` / `localhost`); TLS obrigatório no restante.
 - **`exported=false`** em todas as activities que não são _launcher_.
+- **RBAC + isolamento por conta** — recursos de operador exigem papel `OPERADOR`; dados são
+  segregados por dono, com validação de participação no backend (403 em acesso cruzado).
 - **Firebase Crashlytics** para relatórios de crash (coleta desabilitada em _debug_).
 - **DLP + auditoria** — detecção de dados sensíveis e trilha de eventos
   (ver [Trust & Safety / Compliance](#trust--safety--compliance)).
