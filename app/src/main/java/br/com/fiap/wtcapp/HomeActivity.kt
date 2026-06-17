@@ -106,7 +106,7 @@ fun HomeScreen(
 ) {
     var showThemeDialog by remember { mutableStateOf(false) }
 
-    Box(
+    Column(
         modifier =
             Modifier
                 .fillMaxSize()
@@ -115,7 +115,8 @@ fun HomeScreen(
         Column(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .weight(1f)
                     .padding(24.dp),
         ) {
             Row(
@@ -194,8 +195,8 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier =
                 Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 12.dp),
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 12.dp, bottom = 12.dp),
         )
     }
 
