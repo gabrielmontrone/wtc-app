@@ -8,8 +8,10 @@ Kotlin com Jetpack Compose, consumindo a API REST da plataforma.
 repositório separado: https://github.com/gabrielmontrone/wtc
 
 Para apenas testar o app, baixe o APK pronto na página de releases
-(https://github.com/gabrielmontrone/wtc-app/releases/latest). Suba o backend antes de abrir o app — o
-passo a passo está em [Build e execução](#build-e-execução).
+(https://github.com/gabrielmontrone/wtc-app/releases/latest) e abra. Por padrão ele já aponta para o
+backend publicado (`https://wtc-ioxk.onrender.com/`), então funciona sem instalar nada além do app.
+Quem quiser rodar contra um backend local pode trocar a URL pelo ícone de engrenagem; o passo a passo
+está em [Build e execução](#build-e-execução).
 
 A mensageria é o produto; em cima dela há controles de proteção de dados, detecção de atividade
 suspeita e auditoria.
@@ -104,35 +106,42 @@ app/src/main/java/br/com/fiap/wtcapp/
 
 ## Build e execução
 
-### Rodando com o APK e o backend local
+### Rodando com o APK (caminho mais rápido)
 
-O caminho mais rápido para testar: subir o backend localmente e abrir o app, sem alterar nenhuma
-linha de código e sem precisar compilar nada. A ordem importa — suba o backend primeiro, depois o app.
+O jeito mais simples de testar: baixar o APK pronto e abrir. Ele já aponta para o backend publicado,
+então não precisa subir nada nem compilar.
 
-1. Suba o backend com Docker (não precisa de configuração). O repositório é
-   https://github.com/gabrielmontrone/wtc:
+1. Baixe o `wtc-demo.apk` na página de releases e instale no emulador ou no celular:
+   https://github.com/gabrielmontrone/wtc-app/releases/latest. No celular, aceite a instalação de
+   "fontes desconhecidas" quando pedir.
+2. Abra o app. Por padrão ele usa `https://wtc-ioxk.onrender.com/`, então já funciona.
+3. Registre uma conta no app (use o papel OPERADOR para ver todos os recursos) e siga o
+   [roteiro de demonstração](DEMO.md).
+
+O backend publicado roda no plano gratuito da Render, que hiberna após alguns minutos sem uso. A
+primeira requisição depois de um período ocioso pode levar de 30 a 60 segundos para "acordar" o
+servidor; as seguintes são rápidas.
+
+### Rodando contra um backend local (opcional)
+
+Se quiser rodar offline ou sem depender da Render, suba o backend com Docker e aponte o app para ele.
+O backend fica em https://github.com/gabrielmontrone/wtc.
+
+1. Suba o backend (não precisa de configuração):
    ```bash
    git clone https://github.com/gabrielmontrone/wtc.git
    cd wtc
    docker compose up --build      # API em http://localhost:8080
    ```
-   Deixe o container rodando — é ele que o app vai consumir.
-2. Com o backend no ar, baixe o APK pronto na página de releases e instale no emulador/celular:
-   https://github.com/gabrielmontrone/wtc-app/releases/latest (arquivo `wtc-demo.apk`). Ele já vem
-   apontando para `http://10.0.2.2:8080/`. Se preferir compilar você mesmo, veja
-   [Gerando o APK de demonstração](#gerando-o-apk-de-demonstração).
-3. Abra o app:
-   - No emulador, funciona de imediato, porque `10.0.2.2` é o `localhost` da máquina host visto de
-     dentro do emulador.
-   - Em um celular físico (na mesma Wi-Fi do PC), abra o ícone de engrenagem na tela inicial e troque
-     a URL para `http://<IP-do-PC>:8080/` — descubra o IP com `ipconfig` (Windows) ou `ifconfig`
-     (Linux/Mac). Não precisa recompilar.
-4. Registre uma conta no app (use o papel OPERADOR para ver todos os recursos) e siga o
-   [roteiro de demonstração](DEMO.md).
+2. Aponte o app para esse backend, sem recompilar, pelo ícone de engrenagem na tela inicial:
+   - No emulador, use `http://10.0.2.2:8080/` (`10.0.2.2` é o `localhost` da máquina host visto de
+     dentro do emulador).
+   - Em um celular físico (na mesma Wi-Fi do PC), use `http://<IP-do-PC>:8080/` — descubra o IP com
+     `ipconfig` (Windows) ou `ifconfig` (Linux/Mac). Pode ser necessário liberar a porta 8080 no
+     firewall do PC.
 
-A URL do servidor pode ser trocada em tempo de execução pelo ícone de engrenagem ("Servidor da
-API"), então o mesmo APK serve tanto para o emulador quanto para o celular. O valor inicial vem do
-build (`BuildConfig.BASE_URL`).
+A URL do servidor pode ser trocada em tempo de execução pelo ícone de engrenagem ("Servidor da API").
+O valor inicial vem do build (`BuildConfig.BASE_URL`), que por padrão é o backend publicado.
 
 ### Rodando a partir do código-fonte
 
@@ -159,8 +168,11 @@ Pré-requisitos: Android Studio recente, um emulador ou dispositivo, e a API WTC
 ### Gerando o APK de demonstração
 
 ```bash
-./gradlew :app:assembleDebug -PapiBaseUrl=http://10.0.2.2:8080/
+./gradlew :app:assembleDebug
 # Saída: app/build/outputs/apk/debug/app-debug.apk
+
+# Para já embutir um backend local como padrão (em vez do publicado):
+./gradlew :app:assembleDebug -PapiBaseUrl=http://10.0.2.2:8080/
 ```
 
 O build debug permite tráfego HTTP em texto puro para qualquer host, o que é necessário para apontar

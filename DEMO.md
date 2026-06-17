@@ -5,25 +5,16 @@ funcionalidades. Para a visão de arquitetura e do projeto como um todo, veja o 
 
 ## Pré-requisitos (uma vez)
 
-A ordem importa: suba o backend primeiro e só depois abra o app pelo APK.
-
-1. Backend rodando localmente (instantâneo, sem conta na nuvem). O backend fica em
-   https://github.com/gabrielmontrone/wtc:
-   ```bash
-   git clone https://github.com/gabrielmontrone/wtc.git
-   cd wtc
-   docker compose up --build     # API em http://localhost:8080
-   ```
-   Deixe o container rodando. Se preferir não usar Docker, dá para rodar com
-   `./mvnw spring-boot:run` e um arquivo `.env` — as instruções estão no
-   [README do backend](https://github.com/gabrielmontrone/wtc).
-2. Com o backend no ar, baixe o APK pronto na página de releases e instale no emulador ou no celular:
-   https://github.com/gabrielmontrone/wtc-app/releases/latest (arquivo `wtc-demo.apk`).
-   - No emulador, o APK já aponta para `http://10.0.2.2:8080/` e funciona de imediato.
-   - No celular físico (na mesma Wi-Fi do PC), abra o ícone de engrenagem na tela inicial e troque a
-     URL para `http://<IP-do-PC>:8080/`. Não precisa recompilar.
-
-   Os detalhes de build e execução estão no [README](README.md#build-e-execução).
+1. Baixe o `wtc-demo.apk` na página de releases e instale no emulador ou no celular:
+   https://github.com/gabrielmontrone/wtc-app/releases/latest. No celular, aceite a instalação de
+   "fontes desconhecidas" quando pedir.
+2. Abra o app. Por padrão ele já usa o backend publicado (`https://wtc-ioxk.onrender.com/`), então
+   funciona sem subir mais nada. A primeira requisição pode levar de 30 a 60 segundos enquanto a
+   Render "acorda" o servidor; as seguintes são rápidas.
+   - Para rodar contra um backend local, suba-o com Docker (`docker compose up --build` no repositório
+     https://github.com/gabrielmontrone/wtc) e troque a URL pelo ícone de engrenagem na tela inicial:
+     `http://10.0.2.2:8080/` no emulador ou `http://<IP-do-PC>:8080/` no celular. Detalhes no
+     [README](README.md#build-e-execução).
 3. Faça login. Alguns recursos pedem uma conta OPERADOR (campanhas, por exemplo); outros funcionam
    com qualquer conta.
 
@@ -54,7 +45,10 @@ CLIENTE:  Welcome -> Login -> Home -> Minha conversa -> Mensagens
 
 Logo abaixo de "Entrar" há o botão "Continuar com Google". Ao tocá-lo, abre o seletor de conta
 Google e o app entra (ou cria a conta, como CLIENTE no primeiro acesso). Esse recurso depende do
-Web Client ID configurado no Firebase e do Google Play Services no aparelho.
+Web Client ID configurado no Firebase, do Google Play Services no aparelho e de o backend ter o
+`GOOGLE_CLIENT_ID` definido. No backend publicado essa variável pode não estar configurada — nesse
+caso o endpoint responde 503 (serviço indisponível) com uma mensagem clara, em vez de travar, e o app
+exibe um erro de login. Para a demonstração, o login por e-mail e senha é o caminho garantido.
 
 ### 2. Atalho `/` de campanhas (tela de Mensagens)
 
