@@ -36,10 +36,12 @@ class SessionStorage
         fun save(
             token: String,
             role: String,
+            userId: String?,
         ) {
             prefs.edit {
                 putString(TOKEN_KEY, token)
                 putString(ROLE_KEY, role)
+                putString(USER_ID_KEY, userId)
             }
         }
 
@@ -47,11 +49,14 @@ class SessionStorage
 
         fun role(): String? = prefs.getString(ROLE_KEY, null)
 
+        fun userId(): String? = prefs.getString(USER_ID_KEY, null)
+
         fun clear() = prefs.edit { clear() }
 
         private companion object {
             const val PREFS_NAME = "wtc_secure_session"
             const val TOKEN_KEY = "jwt_token"
             const val ROLE_KEY = "user_role"
+            const val USER_ID_KEY = "user_id"
         }
     }

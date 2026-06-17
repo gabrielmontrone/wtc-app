@@ -27,7 +27,7 @@ class AuthRepositoryImpl
         ): Result<Session> =
             withContext(ioDispatcher) {
                 runCatching { api.login(LoginRequestDto(email, password)).toDomain() }
-                    .onSuccess { session -> sessionStorage.save(session.token, session.role) }
+                    .onSuccess { session -> sessionStorage.save(session.token, session.role, session.userId) }
             }
 
         override suspend fun register(
@@ -49,10 +49,14 @@ class AuthRepositoryImpl
         override suspend fun loginWithGoogle(idToken: String): Result<Session> =
             withContext(ioDispatcher) {
                 runCatching { api.loginWithGoogle(GoogleLoginRequestDto(idToken)).toDomain() }
-                    .onSuccess { session -> sessionStorage.save(session.token, session.role) }
+                    .onSuccess { session -> sessionStorage.save(session.token, session.role, session.userId) }
             }
 
         override fun currentToken(): String? = sessionStorage.token()
+
+        override fun currentRole(): String? = sessionStorage.role()
+
+        override fun currentUserId(): String? = sessionStorage.userId()
 
         override fun logout() = sessionStorage.clear()
 

@@ -7,6 +7,8 @@ import br.com.fiap.wtcapp.domain.repository.AuthRepository
 class FakeAuthRepository(
     private var result: Result<Session> = Result.success(Session("token", "OPERATOR")),
     private var registerResult: Result<Unit> = Result.success(Unit),
+    private val roleValue: String? = "OPERADOR",
+    private val userIdValue: String? = "user1",
 ) : AuthRepository {
     var loginCallCount = 0
         private set
@@ -63,6 +65,10 @@ class FakeAuthRepository(
     }
 
     override fun currentToken(): String? = storedToken
+
+    override fun currentRole(): String? = roleValue
+
+    override fun currentUserId(): String? = userIdValue
 
     override fun logout() {
         storedToken = null

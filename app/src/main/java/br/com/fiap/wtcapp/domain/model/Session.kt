@@ -6,4 +6,5 @@ package br.com.fiap.wtcapp.domain.model
 data class Session(
     val token: String,
     val role: String,
+    val userId: String? = null,
 )

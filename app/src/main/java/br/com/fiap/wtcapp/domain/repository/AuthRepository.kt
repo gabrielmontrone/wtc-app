@@ -23,5 +23,9 @@ interface AuthRepository {
 
     fun currentToken(): String?
 
+    fun currentRole(): String?
+
+    fun currentUserId(): String?
+
     fun logout()
 }

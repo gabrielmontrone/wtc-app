@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 data class LoginResponseDto(
     val token: String,
     val role: String = "",
+    val userId: String? = null,
 )
 
 /** Maps the network DTO to the domain model, keeping the two layers decoupled. */
-fun LoginResponseDto.toDomain(): Session = Session(token = token, role = role)
+fun LoginResponseDto.toDomain(): Session = Session(token = token, role = role, userId = userId)

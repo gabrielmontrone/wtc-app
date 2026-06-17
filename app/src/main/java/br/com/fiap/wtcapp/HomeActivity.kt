@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.fiap.wtcapp.domain.model.ThemeMode
+import br.com.fiap.wtcapp.ui.home.HomeViewModel
 import br.com.fiap.wtcapp.ui.theme.ThemeViewModel
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
@@ -57,13 +59,16 @@ class HomeActivity : ComponentActivity() {
         setContent {
             WtcAppTheme {
                 val themeViewModel: ThemeViewModel = hiltViewModel()
+                val homeViewModel: HomeViewModel = hiltViewModel()
                 val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
                 Surface(modifier = Modifier.fillMaxSize()) {
                     HomeScreen(
+                        isOperator = homeViewModel.isOperator,
                         onOpenContatos = { open(ContatosActivity::class.java) },
                         onOpenCampanhas = { open(CampanhasActivity::class.java) },
                         onOpenSegmentos = { open(SegmentosActivity::class.java) },
                         onOpenAuditoria = { open(AuditoriaActivity::class.java) },
+                        onOpenMinhaConversa = { openMinhaConversa(homeViewModel.conversationId) },
                         themeMode = themeMode,
                         onThemeModeChange = themeViewModel::setThemeMode,
                     )
@@ -75,14 +80,27 @@ class HomeActivity : ComponentActivity() {
     private fun open(target: Class<out ComponentActivity>) {
         startActivity(Intent(this, target))
     }
+
+    private fun openMinhaConversa(conversationId: String?) {
+        if (conversationId.isNullOrBlank()) {
+            Toast.makeText(this, "Conversa indisponível. Faça login novamente.", Toast.LENGTH_LONG).show()
+            return
+        }
+        startActivity(
+            Intent(this, MensagensActivity::class.java)
+                .putExtra(MensagensActivity.EXTRA_CONVERSATION_ID, conversationId),
+        )
+    }
 }
 
 @Composable
 fun HomeScreen(
+    isOperator: Boolean,
     onOpenContatos: () -> Unit,
     onOpenCampanhas: () -> Unit,
     onOpenSegmentos: () -> Unit,
     onOpenAuditoria: () -> Unit,
+    onOpenMinhaConversa: () -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
 ) {
@@ -131,33 +149,42 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Column(modifier = Modifier.fillMaxWidth()) {
-                MenuOption(
-                    title = "Contatos",
-                    description = "CRM, conversas e histórico de mensagens",
-                    emoji = "📇",
-                    onClick = onOpenContatos,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                MenuOption(
-                    title = "Campanhas",
-                    description = "Envios rápidos e segmentados com métricas",
-                    emoji = "🚀",
-                    onClick = onOpenCampanhas,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                MenuOption(
-                    title = "Segmentos",
-                    description = "Agrupamentos por tag, score e status",
-                    emoji = "🧩",
-                    onClick = onOpenSegmentos,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                MenuOption(
-                    title = "Auditoria",
-                    description = "Trilha de ações e eventos de compliance",
-                    emoji = "🛡️",
-                    onClick = onOpenAuditoria,
-                )
+                if (isOperator) {
+                    MenuOption(
+                        title = "Contatos",
+                        description = "CRM, conversas e histórico de mensagens",
+                        emoji = "📇",
+                        onClick = onOpenContatos,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MenuOption(
+                        title = "Campanhas",
+                        description = "Envios rápidos e segmentados com métricas",
+                        emoji = "🚀",
+                        onClick = onOpenCampanhas,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MenuOption(
+                        title = "Segmentos",
+                        description = "Agrupamentos por tag, score e status",
+                        emoji = "🧩",
+                        onClick = onOpenSegmentos,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MenuOption(
+                        title = "Auditoria",
+                        description = "Trilha de ações e eventos de compliance",
+                        emoji = "🛡️",
+                        onClick = onOpenAuditoria,
+                    )
+                } else {
+                    MenuOption(
+                        title = "Minha conversa",
+                        description = "Fale com o atendimento da WTC",
+                        emoji = "💬",
+                        onClick = onOpenMinhaConversa,
+                    )
+                }
             }
         }
 
@@ -282,10 +309,12 @@ private fun ThemeOptionRow(
 private fun HomeScreenPreview() {
     WTCTheme(darkTheme = true) {
         HomeScreen(
+            isOperator = true,
             onOpenContatos = {},
             onOpenCampanhas = {},
             onOpenSegmentos = {},
             onOpenAuditoria = {},
+            onOpenMinhaConversa = {},
             themeMode = ThemeMode.SYSTEM,
             onThemeModeChange = {},
         )
