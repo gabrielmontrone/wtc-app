@@ -10,6 +10,8 @@ repositório separado: https://github.com/gabrielmontrone/wtc
 Para apenas testar o app, baixe o APK pronto na página de releases
 (https://github.com/gabrielmontrone/wtc-app/releases/latest) e abra. Por padrão ele já aponta para o
 backend publicado (`https://wtc-ioxk.onrender.com/`), então funciona sem instalar nada além do app.
+Só vale lembrar que a primeira requisição pode demorar de 30 a 60 segundos por causa do "cold start"
+da Render — explicado em [Sobre o backend publicado e o cold start](#sobre-o-backend-publicado-e-o-cold-start).
 Quem quiser rodar contra um backend local pode trocar a URL pelo ícone de engrenagem; o passo a passo
 está em [Build e execução](#build-e-execução).
 
@@ -118,9 +120,20 @@ então não precisa subir nada nem compilar.
 3. Registre uma conta no app (use o papel OPERADOR para ver todos os recursos) e siga o
    [roteiro de demonstração](DEMO.md).
 
-O backend publicado roda no plano gratuito da Render, que hiberna após alguns minutos sem uso. A
-primeira requisição depois de um período ocioso pode levar de 30 a 60 segundos para "acordar" o
-servidor; as seguintes são rápidas.
+### Sobre o backend publicado e o cold start
+
+O backend publicado roda no plano gratuito da Render. Para economizar recursos, esse plano coloca o
+servidor para "dormir" depois de cerca de 15 minutos sem nenhuma requisição. Quando isso acontece, a
+próxima requisição precisa primeiro acordar a instância antes de ser respondida.
+
+Na prática, isso significa que **a primeira ação depois de um tempo ocioso (normalmente o login) pode
+levar de 30 a 60 segundos**. O app pode parecer travado nesse intervalo — é só aguardar. A partir da
+segunda requisição o servidor já está acordado e tudo responde rápido.
+
+Para evitar a espera durante uma demonstração, dá para "aquecer" o servidor com antecedência: abra
+`https://wtc-ioxk.onrender.com/health` no navegador alguns segundos antes e espere aparecer
+`WTC API running`. Depois disso o app responde sem atraso. Se preferir não depender da Render, rode o
+backend localmente (seção abaixo) — aí não há cold start.
 
 ### Rodando contra um backend local (opcional)
 
