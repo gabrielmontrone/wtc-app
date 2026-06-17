@@ -102,7 +102,7 @@ app/src/main/java/br/com/fiap/wtcapp/
 
 ## Build e execução
 
-### ⚡ Avaliação rápida (APK + backend local, sem editar código)
+### APK + backend local
 
 Cenário de teste: subir o backend localmente e abrir o app — **nenhuma alteração de código**.
 
