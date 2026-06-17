@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp.ui.auditoria
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.fiap.wtcapp.domain.model.AuditSummary
 import br.com.fiap.wtcapp.domain.usecase.GetAuditEventsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,9 @@ class AuditoriaViewModel
             viewModelScope.launch {
                 getAuditEvents().fold(
                     onSuccess = { events ->
-                        _uiState.update { it.copy(isLoading = false, events = events) }
+                        _uiState.update {
+                            it.copy(isLoading = false, events = events, summary = AuditSummary.from(events))
+                        }
                     },
                     onFailure = { error ->
                         _uiState.update {

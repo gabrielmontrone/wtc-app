@@ -275,27 +275,35 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedButton(
-            onClick = onGoogleSignIn,
-            enabled = !state.isLoading,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-            shape = RoundedCornerShape(12.dp),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_google_logo),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Continuar com Google", fontWeight = FontWeight.Bold)
-        }
+        GoogleSignInButton(enabled = !state.isLoading, onClick = onGoogleSignIn)
 
         TextButton(onClick = onCreateAccount) {
             Text("Não tem conta? Criar conta", color = MaterialTheme.colorScheme.onBackground)
         }
+    }
+}
+
+@Composable
+private fun GoogleSignInButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_google_logo),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text("Continuar com Google", fontWeight = FontWeight.Bold)
     }
 }
 

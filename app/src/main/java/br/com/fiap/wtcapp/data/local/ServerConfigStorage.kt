@@ -26,8 +26,7 @@ class ServerConfigStorage
         }
 
         /** The URL currently in effect — the user's override, or the build-time default. */
-        fun baseUrl(): String =
-            prefs.getString(KEY_BASE_URL, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL
+        fun baseUrl(): String = prefs.getString(KEY_BASE_URL, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL
 
         /** The build-time default, shown as the "restore" target in settings. */
         fun defaultBaseUrl(): String = DEFAULT_BASE_URL
