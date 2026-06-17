@@ -45,6 +45,7 @@ data class ContatosUiState(
 data class AddContactForm(
     val name: String = "",
     val document: String = "",
+    val email: String = "",
     val vip: Boolean = false,
     val loyalty: Boolean = false,
     val active: Boolean = true,

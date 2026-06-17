@@ -5,6 +5,7 @@ import br.com.fiap.wtcapp.data.remote.dto.CustomerRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.Customer
+import br.com.fiap.wtcapp.domain.model.NewContact
 import br.com.fiap.wtcapp.domain.repository.CustomerRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -28,22 +29,17 @@ class CustomerRepositoryImpl
                 }
             }
 
-        override suspend fun createCustomer(
-            name: String,
-            document: String,
-            vip: Boolean,
-            loyalty: Boolean,
-            active: Boolean,
-        ): Result<Customer> =
+        override suspend fun createCustomer(contact: NewContact): Result<Customer> =
             withContext(ioDispatcher) {
                 runCatching {
                     api.createCustomer(
                         CustomerRequestDto(
-                            name = name,
-                            document = document,
-                            vip = vip,
-                            fidelidade = loyalty,
-                            ativo = active,
+                            name = contact.name,
+                            document = contact.document,
+                            vip = contact.vip,
+                            fidelidade = contact.loyalty,
+                            ativo = contact.active,
+                            email = contact.email,
                         ),
                     ).toDomain()
                 }

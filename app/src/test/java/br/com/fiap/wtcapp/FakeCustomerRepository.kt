@@ -1,6 +1,7 @@
 package br.com.fiap.wtcapp
 
 import br.com.fiap.wtcapp.domain.model.Customer
+import br.com.fiap.wtcapp.domain.model.NewContact
 import br.com.fiap.wtcapp.domain.repository.CustomerRepository
 
 class FakeCustomerRepository(
@@ -13,6 +14,8 @@ class FakeCustomerRepository(
     var createCount = 0
         private set
     var lastCreated: Customer? = null
+        private set
+    var lastCreatedEmail: String? = null
         private set
 
     private var createResult: Result<Customer>? = null
@@ -35,15 +38,11 @@ class FakeCustomerRepository(
         return result
     }
 
-    override suspend fun createCustomer(
-        name: String,
-        document: String,
-        vip: Boolean,
-        loyalty: Boolean,
-        active: Boolean,
-    ): Result<Customer> {
+    override suspend fun createCustomer(contact: NewContact): Result<Customer> {
         createCount++
-        val created = Customer("new-id", name, document, vip, loyalty, active)
+        lastCreatedEmail = contact.email
+        val created =
+            Customer("new-id", contact.name, contact.document, contact.vip, contact.loyalty, contact.active)
         lastCreated = created
         return createResult ?: Result.success(created)
     }

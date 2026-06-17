@@ -2,7 +2,6 @@ package br.com.fiap.wtcapp.data.repository
 
 import br.com.fiap.wtcapp.data.remote.WtcApi
 import br.com.fiap.wtcapp.data.remote.dto.ConversationRequestDto
-import br.com.fiap.wtcapp.data.remote.dto.StartClientConversationRequestDto
 import br.com.fiap.wtcapp.data.remote.dto.toDomain
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.model.Conversation
@@ -25,10 +24,5 @@ class ConversationRepositoryImpl
         override suspend fun startConversation(customerId: String): Result<Conversation> =
             withContext(ioDispatcher) {
                 runCatching { api.createConversation(ConversationRequestDto(customerId)).toDomain() }
-            }
-
-        override suspend fun startConversationWithClient(email: String): Result<Conversation> =
-            withContext(ioDispatcher) {
-                runCatching { api.startConversationWithClient(StartClientConversationRequestDto(email)).toDomain() }
             }
     }

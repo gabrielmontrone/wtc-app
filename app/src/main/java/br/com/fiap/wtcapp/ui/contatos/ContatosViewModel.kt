@@ -2,6 +2,7 @@ package br.com.fiap.wtcapp.ui.contatos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.fiap.wtcapp.domain.model.NewContact
 import br.com.fiap.wtcapp.domain.usecase.CreateCustomerUseCase
 import br.com.fiap.wtcapp.domain.usecase.GetCustomersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,6 +57,8 @@ class ContatosViewModel
 
         fun onFormDocumentChange(value: String) = updateForm { it.copy(document = value) }
 
+        fun onFormEmailChange(value: String) = updateForm { it.copy(email = value) }
+
         fun onFormVipChange(value: Boolean) = updateForm { it.copy(vip = value) }
 
         fun onFormLoyaltyChange(value: Boolean) = updateForm { it.copy(loyalty = value) }
@@ -67,7 +70,16 @@ class ContatosViewModel
             if (form.isSaving) return
             updateForm { it.copy(isSaving = true) }
             viewModelScope.launch {
-                createCustomer(form.name, form.document, form.vip, form.loyalty, form.active).fold(
+                createCustomer(
+                    NewContact(
+                        name = form.name,
+                        document = form.document,
+                        vip = form.vip,
+                        loyalty = form.loyalty,
+                        active = form.active,
+                        email = form.email,
+                    ),
+                ).fold(
                     onSuccess = {
                         _uiState.update { it.copy(addForm = null) }
                         load()

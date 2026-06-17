@@ -1,6 +1,7 @@
 package br.com.fiap.wtcapp.domain.repository
 
 import br.com.fiap.wtcapp.domain.model.Customer
+import br.com.fiap.wtcapp.domain.model.NewContact
 
 interface CustomerRepository {
     suspend fun customers(
@@ -9,11 +10,5 @@ interface CustomerRepository {
         active: Boolean? = null,
     ): Result<List<Customer>>
 
-    suspend fun createCustomer(
-        name: String,
-        document: String,
-        vip: Boolean,
-        loyalty: Boolean,
-        active: Boolean,
-    ): Result<Customer>
+    suspend fun createCustomer(contact: NewContact): Result<Customer>
 }

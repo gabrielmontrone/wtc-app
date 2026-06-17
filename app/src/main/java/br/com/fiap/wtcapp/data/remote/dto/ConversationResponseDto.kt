@@ -16,11 +16,6 @@ data class ConversationRequestDto(
     val customerId: String,
 )
 
-@Serializable
-data class StartClientConversationRequestDto(
-    val email: String,
-)
-
 fun ConversationResponseDto.toDomain(): Conversation =
     Conversation(
         id = id,

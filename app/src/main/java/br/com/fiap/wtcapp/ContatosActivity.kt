@@ -55,7 +55,6 @@ import br.com.fiap.wtcapp.ui.contatos.AddContactForm
 import br.com.fiap.wtcapp.ui.contatos.ContatoFiltro
 import br.com.fiap.wtcapp.ui.contatos.ContatosUiState
 import br.com.fiap.wtcapp.ui.contatos.ContatosViewModel
-import br.com.fiap.wtcapp.ui.conversas.StartClientConversationButton
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -74,12 +73,6 @@ class ContatosActivity : ComponentActivity() {
                                     .putExtra(ConversasActivity.EXTRA_CUSTOMER_ID, customerId),
                             )
                         },
-                        onOpenConversation = { conversationId ->
-                            startActivity(
-                                Intent(this, MensagensActivity::class.java)
-                                    .putExtra(MensagensActivity.EXTRA_CONVERSATION_ID, conversationId),
-                            )
-                        },
                     )
                 }
             }
@@ -90,7 +83,6 @@ class ContatosActivity : ComponentActivity() {
 @Composable
 fun ContatosRoute(
     onContactClick: (String) -> Unit,
-    onOpenConversation: (String) -> Unit,
     viewModel: ContatosViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,7 +95,6 @@ fun ContatosRoute(
         onFilterChange = viewModel::onFilterChange,
         onContactClick = onContactClick,
         onAddContactClick = viewModel::onAddContactClick,
-        headerAction = { StartClientConversationButton(onOpenConversation = onOpenConversation) },
     )
 
     uiState.addForm?.let { form ->
@@ -111,6 +102,7 @@ fun ContatosRoute(
             form = form,
             onNameChange = viewModel::onFormNameChange,
             onDocumentChange = viewModel::onFormDocumentChange,
+            onEmailChange = viewModel::onFormEmailChange,
             onVipChange = viewModel::onFormVipChange,
             onLoyaltyChange = viewModel::onFormLoyaltyChange,
             onActiveChange = viewModel::onFormActiveChange,
@@ -128,7 +120,6 @@ fun ContatosScreen(
     onFilterChange: (ContatoFiltro) -> Unit,
     onContactClick: (String) -> Unit,
     onAddContactClick: () -> Unit,
-    headerAction: @Composable () -> Unit = {},
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -150,19 +141,13 @@ fun ContatosScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(24.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Contatos",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                headerAction()
-            }
+            Text(
+                text = "Contatos",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
 
             OutlinedTextField(
                 value = state.search,
@@ -215,6 +200,7 @@ fun AddContactDialog(
     form: AddContactForm,
     onNameChange: (String) -> Unit,
     onDocumentChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
     onVipChange: (Boolean) -> Unit,
     onLoyaltyChange: (Boolean) -> Unit,
     onActiveChange: (Boolean) -> Unit,
@@ -242,6 +228,17 @@ fun AddContactDialog(
                     singleLine = true,
                     enabled = !form.isSaving,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+                OutlinedTextField(
+                    value = form.email,
+                    onValueChange = onEmailChange,
+                    label = { Text("E-mail do cliente (opcional)") },
+                    supportingText = { Text("Vincula o contato a uma conta; ela verá as mensagens ao entrar.") },
+                    singleLine = true,
+                    enabled = !form.isSaving,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                 )

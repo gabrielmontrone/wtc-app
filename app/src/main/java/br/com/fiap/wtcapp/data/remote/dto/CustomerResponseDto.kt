@@ -20,6 +20,7 @@ data class CustomerRequestDto(
     val vip: Boolean,
     val fidelidade: Boolean,
     val ativo: Boolean,
+    val email: String? = null,
 )
 
 fun CustomerResponseDto.toDomain(): Customer =
