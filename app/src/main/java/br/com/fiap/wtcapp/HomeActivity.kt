@@ -188,16 +188,6 @@ fun HomeScreen(
                 }
             }
         }
-
-        Text(
-            text = "© 2025 WTC. Todos os direitos reservados.",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier =
-                Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 12.dp, bottom = 12.dp),
-        )
     }
 
     if (showThemeDialog) {
