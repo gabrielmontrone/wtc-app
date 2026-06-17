@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -23,6 +25,19 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Backend base URL. Defaults to the hosted demo so the app runs with zero setup
+        // (just install and launch). For local development, override without touching source
+        // by adding `apiBaseUrl=http://10.0.2.2:8080/` to local.properties (git-ignored),
+        // or by passing `-PapiBaseUrl=...` on the Gradle command line.
+        val localProps = Properties().apply {
+            val file = rootProject.file("local.properties")
+            if (file.exists()) file.inputStream().use { load(it) }
+        }
+        val apiBaseUrl = localProps.getProperty("apiBaseUrl")
+            ?: (project.findProperty("apiBaseUrl") as String?)
+            ?: "https://wtc-ioxk.onrender.com/"
+        buildConfigField("String", "BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {

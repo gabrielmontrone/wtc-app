@@ -3,6 +3,7 @@ package br.com.fiap.wtcapp.di
 import br.com.fiap.wtcapp.BuildConfig
 import br.com.fiap.wtcapp.api.ApiConfig
 import br.com.fiap.wtcapp.data.remote.AuthInterceptor
+import br.com.fiap.wtcapp.data.remote.BaseUrlInterceptor
 import br.com.fiap.wtcapp.data.remote.WtcApi
 import dagger.Module
 import dagger.Provides
@@ -35,7 +36,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor,
+        authInterceptor: AuthInterceptor,
+    ): OkHttpClient {
         val logging =
             HttpLoggingInterceptor().apply {
                 level =
@@ -46,6 +50,9 @@ object NetworkModule {
                     }
             }
         return OkHttpClient.Builder()
+            // Rewrite to the runtime-configured backend first, then attach auth, then log
+            // the final request.
+            .addInterceptor(baseUrlInterceptor)
             .addInterceptor(authInterceptor)
             .addInterceptor(logging)
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -60,6 +67,8 @@ object NetworkModule {
         json: Json,
     ): Retrofit =
         Retrofit.Builder()
+            // Fixed placeholder; the real backend is applied per-request by BaseUrlInterceptor,
+            // so changing the server URL at runtime takes effect without rebuilding Retrofit.
             .baseUrl(ApiConfig.BASE_URL)
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))

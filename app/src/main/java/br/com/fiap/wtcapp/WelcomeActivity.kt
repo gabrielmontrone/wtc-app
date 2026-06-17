@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.fiap.wtcapp.ui.settings.ServerSettingsButton
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,7 +46,17 @@ class WelcomeActivity : ComponentActivity() {
         setContent {
             WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    WelcomeScreen()
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        WelcomeScreen()
+                        // Runtime backend switcher — lets the app target an emulator or a
+                        // physical phone's host without rebuilding the APK.
+                        ServerSettingsButton(
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(top = 24.dp, end = 8.dp),
+                        )
+                    }
                 }
             }
         }

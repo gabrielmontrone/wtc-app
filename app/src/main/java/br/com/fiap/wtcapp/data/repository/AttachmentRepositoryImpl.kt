@@ -1,6 +1,6 @@
 package br.com.fiap.wtcapp.data.repository
 
-import br.com.fiap.wtcapp.api.ApiConfig
+import br.com.fiap.wtcapp.data.local.ServerConfigStorage
 import br.com.fiap.wtcapp.data.remote.WtcApi
 import br.com.fiap.wtcapp.di.IoDispatcher
 import br.com.fiap.wtcapp.domain.repository.AttachmentRepository
@@ -15,6 +15,7 @@ class AttachmentRepositoryImpl
     @Inject
     constructor(
         private val api: WtcApi,
+        private val serverConfig: ServerConfigStorage,
         @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     ) : AttachmentRepository {
         override suspend fun uploadPhoto(
@@ -28,8 +29,8 @@ class AttachmentRepositoryImpl
                     val part = MultipartBody.Part.createFormData("file", fileName, body)
                     val response = api.uploadAttachment(part)
                     // Backend returns a relative URL ("/api/v1/attachments/{id}"); make it absolute
-                    // so the device (which already reaches BASE_URL) can load it via Coil.
-                    ApiConfig.BASE_URL.trimEnd('/') + response.url
+                    // against the currently configured backend so Coil can load it on-device.
+                    serverConfig.baseUrl().trimEnd('/') + response.url
                 }
             }
     }

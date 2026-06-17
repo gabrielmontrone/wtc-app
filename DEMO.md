@@ -1,19 +1,24 @@
 # WTC — Roteiro de demonstração
 
 Guia prático para ver na tela os recursos da **camada de Trust & Safety / Compliance** e as
-demais funcionalidades recentes. Para a visão de arquitetura/positioning, veja o
+demais funcionalidades. Para a visão de arquitetura/positioning, veja o
 [README](README.md).
 
 ## ▶️ Pré-requisitos (uma vez)
 
-1. **Backend rodando** com o código mais recente:
+1. **Backend rodando** localmente (instantâneo, sem conta na nuvem):
    ```bash
    cd backend/wtc
-   ./mvnw spring-boot:run        # Windows: .\mvnw.cmd spring-boot:run
+   docker compose up --build     # API em http://localhost:8080
    ```
-   O `.env` (git-ignored) é carregado automaticamente.
-2. **App** apontando para esse backend em `app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt`,
-   rodando em emulador/dispositivo.
+   (Alternativa sem Docker: `./mvnw spring-boot:run` com um `.env` — ver
+   [README do backend](../backend/wtc/README.md).)
+2. **App** rodando em emulador/dispositivo:
+   - **Emulador** → o APK de demonstração já aponta para `http://10.0.2.2:8080/`.
+   - **Celular físico** → toque no ícone **⚙** na tela inicial e troque para
+     `http://<IP-do-PC>:8080/` (mesma Wi-Fi). Sem rebuild.
+
+   Detalhes em [README → Build e execução](README.md#build-e-execução).
 3. Faça login — alguns recursos pedem conta **OPERADOR** (campanhas); outros, qualquer conta.
 
 ## 👤 Papéis (o menu muda conforme a conta)
@@ -22,8 +27,6 @@ demais funcionalidades recentes. Para a visão de arquitetura/positioning, veja 
 - **CLIENTE** — vê **apenas a própria conversa** ("Minha conversa"); não acessa CRM,
   campanhas, segmentos nem auditoria (o backend também bloqueia com **403**).
 
-> Os dados são isolados por conta: um operador só enxerga os contatos/conversas que **ele**
-> criou. Para a demo, crie contatos novos com a conta de operador.
 
 ## 🗺️ Mapa de navegação
 
@@ -55,7 +58,8 @@ CLIENTE:  Welcome → Login → Home → Minha conversa → Mensagens
 - **Onde:** ícone **+** à esquerda do campo de texto.
 - **Ação:** toque no **+** → escolha uma imagem → prévia com opção de remover → **Enviar** →
   a foto aparece _inline_ no chat.
-- *O upload real exige storage (MinIO/S3) ativo no backend.*
+- *O arquivo é enviado via multipart e guardado no próprio backend (MongoDB) — funciona com o
+  stack local do Docker, sem storage externo.*
 
 ### 4. Scan DLP — aviso e selos — tela de Mensagens ⭐
 - **Aviso antes de enviar:** digite algo sensível, ex.: `meu CPF é 529.982.247-25` ou um cartão
@@ -84,5 +88,3 @@ CLIENTE:  Welcome → Login → Home → Minha conversa → Mensagens
 3. **Atalho `/`** (4s) — digite `/` e escolha uma campanha (conta operador).
 4. **Foto** (4s) — toque **+**, escolha uma imagem, envie, mostre _inline_.
 5. **Auditoria** (5s) — volte à Home → **Auditoria** → mostre o `SUSPICIOUS_MESSAGE` no topo.
-
-> Dica: grave em ~720p, mantenha o emulador no tema escuro e use dados fictícios.

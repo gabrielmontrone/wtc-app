@@ -1,9 +1,14 @@
 package br.com.fiap.wtcapp.api
 
-object ApiConfig {
-    // Deployed backend (HTTPS) — works on a physical device over any network.
-    const val BASE_URL = "https://wtc-ioxk.onrender.com/"
+import br.com.fiap.wtcapp.BuildConfig
 
-    // Local development against the backend running on the emulator host:
-    // const val BASE_URL = "http://10.0.2.2:8080/"
+/**
+ * Network configuration.
+ *
+ * [BASE_URL] is supplied at build time via `BuildConfig` (see `app/build.gradle.kts`). It
+ * defaults to the hosted demo so the app runs with no setup; override it for local development
+ * by setting `apiBaseUrl` in `local.properties` — no source changes required.
+ */
+object ApiConfig {
+    val BASE_URL: String = BuildConfig.BASE_URL
 }

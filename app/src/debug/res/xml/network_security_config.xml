@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG build only. Permits cleartext (HTTP) traffic to ANY host so the evaluation APK can
+  reach a local backend on whatever address it lives at — 10.0.2.2 from an emulator, or the
+  host machine's LAN IP (e.g. 192.168.x.x) from a physical phone, set via the in-app
+  "Server URL" dialog. The release build uses the strict config in src/main (TLS required).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

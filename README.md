@@ -6,10 +6,8 @@ mensageria. Desenvolvido em **Kotlin** com **Jetpack Compose** e integrado à AP
 
 > 📱 Projeto **mobile** — executa em dispositivo/emulador Android.
 
-A operação de mensageria continua sendo o produto; sobre ela há controles de **proteção de dados,
-detecção de atividade suspeita e auditoria** — os mesmos controles que um time de prevenção a
-fraudes / AML / KYC embute dentro de produtos reais. Veja
-[**Trust & Safety / Compliance**](#trust--safety--compliance).
+Operação de mensageria; sobre ela há controles de **proteção de dados,
+detecção de atividade suspeita e auditoria**.
 
 ---
 
@@ -22,7 +20,7 @@ Fluxo ponta a ponta integrado à API:
 - **Conversas → Mensagens** — _drill-down_ a partir de um contato: conversas do cliente,
   histórico de mensagens e envio de respostas. Inclui:
   - **Atalho `/`** — digite `/` + o nome de uma campanha para inserir a mensagem pronta.
-  - **Envio de fotos** — seletor de imagem → upload pré-assinado (S3/MinIO) → exibição _inline_ (Coil).
+  - **Envio de fotos** — seletor de imagem → upload _multipart_ para o backend → exibição _inline_ (Coil).
   - **Scan DLP** — alerta antes de enviar dados sensíveis (ver Trust & Safety abaixo).
 - **Segmentos** — segmentação de clientes.
 - **Campanhas / Criar Campanha** — métricas de envio e criação de campanhas.
@@ -50,17 +48,6 @@ Camada de controles sobre a mensageria, sem alterar a regra de negócio. Toda me
   (`AccessControlService` → **403** em acesso cruzado), evitando vazamento entre contas.
 - **Proteção de dados** — sessão (JWT) em `EncryptedSharedPreferences` (AES-256); TLS obrigatório
   fora do ambiente de desenvolvimento.
-
-### Mapa de aderência à vaga (prevenção a fraudes / AML / KYC)
-
-| Recurso | Responsabilidade da área |
-|---|---|
-| Scan DLP + selos de risco | Monitoramento e **identificação de atividades suspeitas** |
-| Aviso antes do envio (CPF/CNPJ/cartão) | **Proteção de dados** dos clientes; redução de perdas |
-| Trilha de auditoria (tela Auditoria) | **Auditoria/conformidade**; _accountability_ |
-| RBAC + isolamento por conta (dono + 403) | **Segregação de acesso** (_least privilege_); proteção de dados |
-| JWT criptografado + TLS + `exported=false` | **Segurança** e controles de conformidade |
-| Login com Google (verificação de _ID token_) | Autenticação forte / onboarding |
 
 ## Arquitetura
 
@@ -105,7 +92,7 @@ app/src/main/java/br/com/fiap/wtcapp/
 ├── domain/            # model, repository (interfaces), usecase, compliance (MessageRiskAnalyzer)
 ├── data/              # remote (WtcApi, AuthInterceptor, dto), repository (impls), local (SessionStorage)
 ├── di/                # NetworkModule, RepositoryModule, DispatchersModule
-├── api/ApiConfig.kt   # BASE_URL
+├── api/ApiConfig.kt   # BASE_URL (lido de BuildConfig; default = demo publicada)
 ├── *Activity.kt       # hosts Compose finos (@AndroidEntryPoint) — inclui AuditoriaActivity
 ├── WtcApplication.kt  # @HiltAndroidApp
 └── ui/theme/          # tema Compose (Color, Type, Theme)
@@ -113,40 +100,61 @@ app/src/main/java/br/com/fiap/wtcapp/
 
 ## Build e execução
 
-**Pré-requisitos:** Android Studio (versão recente), um emulador/dispositivo Android e a API WTC
-em execução.
+### ⚡ Avaliação rápida (APK + backend local, sem editar código)
 
-1. Abra o projeto no Android Studio e aguarde o _sync_ do Gradle.
-2. Configure a URL do backend em
-   [`app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt`](app/src/main/java/br/com/fiap/wtcapp/api/ApiConfig.kt):
-   ```kotlin
-   object ApiConfig {
-       // Backend local visto pelo emulador:
-       const val BASE_URL = "http://10.0.2.2:8080/"
-       // Backend local a partir de um dispositivo físico (mesma rede Wi-Fi):
-       // const val BASE_URL = "http://<IP-da-máquina>:8080/"
-       // Ambiente publicado (demo na Render):
-       // const val BASE_URL = "https://wtc-ioxk.onrender.com/"
-   }
+Cenário de teste: subir o backend localmente e abrir o app — **nenhuma alteração de código**.
+
+1. **Suba o backend** (Docker, sem configuração):
+   ```bash
+   cd backend/wtc
+   docker compose up --build      # API em http://localhost:8080
    ```
-   > No **emulador** Android, `10.0.2.2` aponta para o `localhost` da máquina host.
-   > Em um **dispositivo físico**, use o IP da máquina na rede local (ex.: `192.168.x.x`) —
-   > e inclua esse IP em
-   > [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml),
-   > já que tráfego HTTP em texto puro só é permitido para os hosts de desenvolvimento listados.
+2. **Instale o APK** (anexado à _release_ do repositório, ou gere-o com o comando da seção
+   [📦 Gerando o APK de demonstração](#-gerando-o-apk-de-demonstração)). Ele já vem apontando
+   para `http://10.0.2.2:8080/`.
+3. **Abra o app:**
+   - **Emulador** → funciona de imediato (`10.0.2.2` é o `localhost` da máquina host).
+   - **Celular físico** (mesma Wi-Fi do PC) → toque no ícone **⚙** na tela inicial e troque a
+     URL para `http://<IP-do-PC>:8080/` (descubra com `ipconfig`/`ifconfig`). Sem rebuild.
+4. Registre uma conta no app (use papel **OPERADOR** para ver todos os recursos) e siga o
+   [roteiro de demonstração](DEMO.md).
 
-   > ⏱️ **Sobre o ambiente publicado:** a demo `https://wtc-ioxk.onrender.com` roda no
-   > **plano gratuito da Render**, que hiberna após ~15 min ociosos — a primeira requisição
-   > após o período ocioso pode levar **~30–60s** para "acordar" o servidor (as seguintes são
-   > rápidas). **Para desenvolvimento, recomenda-se rodar o backend localmente** (instantâneo
-   > e offline). Consulte o [README do backend](https://github.com/gabrielmontrone/wtc) para
-   > subir a API e exemplos de uso (`curl`/Swagger).
-3. Adicione o `google-services.json` do projeto Firebase em `app/`.
-4. _(Opcional)_ **Login com Google** — habilite o provedor Google no Firebase, registre o SHA-1 do
+> A URL do servidor é **trocável em tempo de execução** (botão ⚙ → "Servidor da API"), então o
+> mesmo APK serve para emulador e celular. O valor inicial vem do build (`BuildConfig.BASE_URL`).
+
+### 🛠️ Rodando do código-fonte
+
+**Pré-requisitos:** Android Studio (versão recente), um emulador/dispositivo e a API WTC em
+execução (ver [README do backend](../backend/wtc/README.md)).
+
+1. Abra o projeto no Android Studio e aguarde o _sync_ do Gradle. O `google-services.json` já
+   acompanha o repositório.
+2. **Sem nenhuma configuração**, a URL inicial do backend vem de `BuildConfig.BASE_URL`
+   (padrão: ambiente publicado), injetada em tempo de build em
+   [`app/build.gradle.kts`](app/build.gradle.kts) — não há URL fixa no código-fonte. Para mudar
+   o padrão **sem editar código**, defina `apiBaseUrl` em `local.properties` (git-ignored) ou
+   passe `-PapiBaseUrl=...` ao Gradle:
+   ```properties
+   # Backend local visto pelo emulador (10.0.2.2 = localhost da máquina host):
+   apiBaseUrl=http://10.0.2.2:8080/
+   ```
+   Em qualquer build, a URL ainda pode ser trocada em tempo de execução pelo botão **⚙**.
+3. _(Opcional)_ **Login com Google** — habilite o provedor Google no Firebase, registre o SHA-1 do
    app e preencha o **Web client ID** em `app/src/main/res/values/strings.xml`
    (`google_web_client_id`) e no backend (`GOOGLE_CLIENT_ID`). Sem isso, o botão fica desabilitado
    com uma mensagem clara.
-5. Execute o app (▶) no emulador/dispositivo.
+4. Execute o app (▶) no emulador/dispositivo.
+
+### 📦 Gerando o APK de demonstração
+
+```bash
+./gradlew :app:assembleDebug -PapiBaseUrl=http://10.0.2.2:8080/
+# Saída: app/build/outputs/apk/debug/app-debug.apk
+```
+
+O build **debug** permite tráfego HTTP em texto puro para qualquer host (necessário para apontar
+a um IP de LAN a partir de um celular); o build **release** mantém TLS obrigatório
+(`network_security_config.xml`).
 
 ## Testes, qualidade e CI
 
