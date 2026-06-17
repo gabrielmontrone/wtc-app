@@ -5,6 +5,8 @@ Aplicativo Android oficial da **WTC**, plataforma de relacionamento e mensageria
 mensageria. Desenvolvido em **Kotlin** com **Jetpack Compose** e integrado à API REST da plataforma.
 
 > 📱 Projeto **mobile** — executa em dispositivo/emulador Android.
+>
+> 🔗 API REST (repositório do backend): **https://github.com/gabrielmontrone/wtc**
 
 Operação de mensageria; sobre ela há controles de **proteção de dados,
 detecção de atividade suspeita e auditoria**.
@@ -104,9 +106,11 @@ app/src/main/java/br/com/fiap/wtcapp/
 
 Cenário de teste: subir o backend localmente e abrir o app — **nenhuma alteração de código**.
 
-1. **Suba o backend** (Docker, sem configuração):
+1. **Suba o backend** (Docker, sem configuração) — repositório:
+   **https://github.com/gabrielmontrone/wtc**
    ```bash
-   cd backend/wtc
+   git clone https://github.com/gabrielmontrone/wtc.git
+   cd wtc
    docker compose up --build      # API em http://localhost:8080
    ```
 2. **Instale o APK** (anexado à _release_ do repositório, ou gere-o com o comando da seção
@@ -125,7 +129,7 @@ Cenário de teste: subir o backend localmente e abrir o app — **nenhuma altera
 ### 🛠️ Rodando do código-fonte
 
 **Pré-requisitos:** Android Studio (versão recente), um emulador/dispositivo e a API WTC em
-execução (ver [README do backend](../backend/wtc/README.md)).
+execução (ver [repositório do backend](https://github.com/gabrielmontrone/wtc)).
 
 1. Abra o projeto no Android Studio e aguarde o _sync_ do Gradle. O `google-services.json` já
    acompanha o repositório.
