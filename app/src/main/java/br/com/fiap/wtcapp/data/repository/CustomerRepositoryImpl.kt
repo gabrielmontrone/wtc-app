@@ -9,6 +9,7 @@ import br.com.fiap.wtcapp.domain.model.NewContact
 import br.com.fiap.wtcapp.domain.repository.CustomerRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class CustomerRepositoryImpl
@@ -42,10 +43,21 @@ class CustomerRepositoryImpl
                             email = contact.email,
                         ),
                     ).toDomain()
+                }.recoverCatching { throwable ->
+                    // Linking by email: the backend answers 404 when no client account owns
+                    // that e-mail. Surface a clear message instead of the raw HTTP error.
+                    if (!contact.email.isNullOrBlank() &&
+                        throwable is HttpException &&
+                        throwable.code() == HTTP_NOT_FOUND
+                    ) {
+                        error("E-mail de cliente não existe")
+                    }
+                    throw throwable
                 }
             }
 
         private companion object {
             const val PAGE_SIZE = 50
+            const val HTTP_NOT_FOUND = 404
         }
     }
