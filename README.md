@@ -24,7 +24,7 @@ suspeita e auditoria.
 
 Fluxo ponta a ponta integrado à API:
 
-- **Login / Welcome** — autenticação JWT e "Continuar com Google" (Credential Manager).
+- **Login** — primeira tela do app: autenticação JWT e "Continuar com Google" (Credential Manager).
 - **Contatos** — listagem de clientes (CRM) com busca e filtros.
 - **Conversas e mensagens** — a partir de um contato, você abre as conversas do cliente, vê o
   histórico e responde. Inclui:
@@ -146,7 +146,7 @@ O backend fica em https://github.com/gabrielmontrone/wtc.
    cd wtc
    docker compose up --build      # API em http://localhost:8080
    ```
-2. Aponte o app para esse backend, sem recompilar, pelo ícone de engrenagem na tela inicial:
+2. Aponte o app para esse backend, sem recompilar, pelo ícone de engrenagem na tela de login:
    - No emulador, use `http://10.0.2.2:8080/` (`10.0.2.2` é o `localhost` da máquina host visto de
      dentro do emulador).
    - Em um celular físico (na mesma Wi-Fi do PC), use `http://<IP-do-PC>:8080/` — descubra o IP com

@@ -12,7 +12,7 @@ funcionalidades. Para a visão de arquitetura e do projeto como um todo, veja o 
    funciona sem subir mais nada. A primeira requisição pode levar de 30 a 60 segundos enquanto a
    Render "acorda" o servidor; as seguintes são rápidas.
    - Para rodar contra um backend local, suba-o com Docker (`docker compose up --build` no repositório
-     https://github.com/gabrielmontrone/wtc) e troque a URL pelo ícone de engrenagem na tela inicial:
+     https://github.com/gabrielmontrone/wtc) e troque a URL pelo ícone de engrenagem na tela de login:
      `http://10.0.2.2:8080/` no emulador ou `http://<IP-do-PC>:8080/` no celular. Detalhes no
      [README](README.md#build-e-execução).
 3. Faça login. Alguns recursos pedem uma conta OPERADOR (campanhas, por exemplo); outros funcionam
@@ -30,11 +30,11 @@ Para a demonstração, crie contatos novos usando a conta de operador.
 ## Mapa de navegação
 
 ```
-OPERADOR: Welcome -> Login -> Home -> Contatos -> (toca um contato) -> Conversas -> (toca uma conversa) -> Mensagens
-                                   -> Campanhas / Segmentos
-                                   -> Auditoria
+OPERADOR: Login -> Home -> Contatos -> (toca um contato) -> Conversas -> (toca uma conversa) -> Mensagens
+                       -> Campanhas / Segmentos
+                       -> Auditoria
 
-CLIENTE:  Welcome -> Login -> Home -> Minha conversa -> Mensagens
+CLIENTE:  Login -> Home -> Minha conversa -> Mensagens
 ```
 
 ---

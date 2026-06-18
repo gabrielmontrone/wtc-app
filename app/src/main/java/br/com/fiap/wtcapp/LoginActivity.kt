@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.fiap.wtcapp.ui.login.LoginUiState
 import br.com.fiap.wtcapp.ui.login.LoginViewModel
+import br.com.fiap.wtcapp.ui.settings.ServerSettingsButton
 import br.com.fiap.wtcapp.ui.theme.WTCTheme
 import br.com.fiap.wtcapp.ui.theme.WtcAppTheme
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -71,19 +73,29 @@ class LoginActivity : ComponentActivity() {
         setContent {
             WtcAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginRoute(
-                        onLoginSuccess = {
-                            // Clear the back stack so "back" can't return to Welcome/Login after entering.
-                            startActivity(
-                                Intent(this, HomeActivity::class.java)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
-                            )
-                            finish()
-                        },
-                        onCreateAccount = {
-                            startActivity(Intent(this, RegisterActivity::class.java))
-                        },
-                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LoginRoute(
+                            onLoginSuccess = {
+                                // Clear the back stack so "back" can't return to Login after entering.
+                                startActivity(
+                                    Intent(this@LoginActivity, HomeActivity::class.java)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
+                                )
+                                finish()
+                            },
+                            onCreateAccount = {
+                                startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
+                            },
+                        )
+                        // Dev-only runtime backend switcher — target an emulator or a physical
+                        // phone's host without rebuilding the APK.
+                        ServerSettingsButton(
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(top = 24.dp, end = 8.dp),
+                        )
+                    }
                 }
             }
         }

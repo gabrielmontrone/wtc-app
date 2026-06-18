@@ -19,7 +19,7 @@
 
         <!-- Tela inicial (única activity exportada: launcher) -->
         <activity
-            android:name=".WelcomeActivity"
+            android:name=".LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.WTC">
@@ -28,13 +28,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Tela de login -->
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false"
-            android:label="Login"
-            android:theme="@style/Theme.WTC" />
 
         <activity
             android:name=".RegisterActivity"
